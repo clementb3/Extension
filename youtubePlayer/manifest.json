@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "Youtube style player",
+  "version": "1.0.2",
+  "permissions": [
+    "storage",
+    "notifications",
+    "webRequest",
+    "declarativeNetRequest",
+    "webNavigation",
+    "nativeMessaging",
+    "offscreen",
+    "scripting"
+  ],
+  "description": "This extension change the other player in youtube player",
+  "icons": {
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "host_permissions": [ "<all_urls>" ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://vidmoly.to/*",
+        "https://*/*referer=v6.voiranime.com",
+        "https://dooodster.com/*"
+      ],
+      "all_frames": true,
+      "run_at": "document_idle",
+      "js": [
+        "content.js"
+      ]
+    }
+  ]
+}
