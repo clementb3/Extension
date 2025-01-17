@@ -169,7 +169,7 @@ function playAuto(play) {
             playButton = document.querySelector(".vjs-big-play-button")
 
         if (playButton != null && !play) {
-            document.querySelector(".vjs-big-play-button").click()
+            playButton.click()
             return true
         }
     }
