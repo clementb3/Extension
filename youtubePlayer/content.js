@@ -135,27 +135,48 @@ async function moon() {
     let play = false
     let changePLayer = false
     while (true) {
-        if (!play)
-            play = playAuto(play)
-        if (!changePLayer) {
-            let controls = document.querySelector(".jw-controls")
-            if (controls != null) {
-                controls.innerHTML = ""
-                controls.style.display = "flex"
-                controls.style.alignItems = "flex-end"
-                controls.style.flexDirection = "column-reverse"
-                controls.style.pointerEvents = "All"
-                controls.appendChild(createPlayer())
+        try {
+            if (!play)
+                play = playAuto(play)
+            if (!changePLayer) {
+                let controls = document.querySelector(".jw-controls")
+                if (controls != null) {
+                    controls.innerHTML = ""
+                    controls.style.display = "flex"
+                    controls.style.alignItems = "flex-end"
+                    controls.style.flexDirection = "column-reverse"
+                    controls.style.pointerEvents = "All"
+                    controls.appendChild(createPlayer())
 
+                }
+                changePLayer = true
             }
-            changePLayer = true
+            if (changePLayer) {
+                let controls = document.getElementById("controlButton")
+                let video = document.querySelector("video")
+                if (controls != null && video != null) {
+                    if (Date.now() - lastClick > 500) {
+                        let nextTimeOpacity = document.getElementById("nextTime")
+                        let prevTimeOpacity = document.getElementById("previousTime")
+                        if (nextTimeOpacity != null)
+                            nextTimeOpacity.style.opacity = "0"
+                        if (prevTimeOpacity != null)
+                            prevTimeOpacity.style.opacity = "0"
+                        prevTime = 0
+                        nextTime = 0
+                    }
+                    if (Date.now() - lastClickGlobal < 2000 || video.paused)
+                        controls.style.opacity = "1"
+                    else
+                        controls.style.opacity = "0"
+                }
+            }
+            let overlay = document.getElementsByClassName("custom-overlay")[0]
+            if (overlay != null) {
+                document.querySelector("body").removeChild(overlay)
+            }
         }
-        if (changePLayer) {
-            if (Date.now() - lastClickGlobal < 2000)
-                document.getElementById("controls").style.opacity = "1"
-            else
-                document.getElementById("controls").style.opacity = "0"
-        }
+        catch { }
         await sleep(100)
     }
 }
@@ -190,6 +211,16 @@ async function main() {
 
 function createPlayer() {
     document.querySelector(".jw-controls").addEventListener("click", clickPlayer)
+    document.querySelector("html").addEventListener("fullscreenchange", function (e) {
+        if (isFullScreen) {
+            document.exitFullscreen()
+            fullScreen.innerHTML = '<svg width="36px" height="36px"  viewBox="0 0 36 36" fill="white"><path d="m 7,16 v -8 h 8 v 1 h -7 v 7"></path><path d="m 19,8 h 8 v 8 h -1 v -7 h -7"></path><path d="m 7,20 v 8 h 8 v -1 h -7 v -7" ></path><path d="m 19,28 h 8 v -8 h -1 v 7 h -7" ></path></svg>'
+        }
+        else {
+            document.querySelector("html").requestFullscreen()
+            fullScreen.innerHTML = '<svg width="36px" height="36px  " viewBox="0 0 36 36" fill="white"><path d="m 7,15 h 7 v -7 h -1 v 6 h -6" ></path><path d="m 21,8 v 7 h 7 v -1 h -6 v -6" ></path><path d="m 7,22 h 7 v 7 h -1 v -6 h -6"></path><path d="m 21,29 v -7 h 7 v 1 h -6 v 6"></path></svg>'
+        }
+    });
     document.querySelector(".jw-controls").addEventListener("mousemove", function () { lastClickGlobal = Date.now() })
     let div = document.createElement("div")
     div.style.width = "100%"
@@ -417,7 +448,7 @@ function createButtonRight() {
     let fullScreen = document.createElement("button")
     fullScreen.style.background = "transparent"
     fullScreen.style.border = "none"
-    fullScreen.innerHTML = '<svg width="48px" height="48px" viewBox="0 0 36 36" fill="white"><g class="ytp-fullscreen-button-corner-0"><use class="ytp-svg-shadow" xlink:href="#ytp-id-7"></use><path class="ytp-svg-fill" d="m 10,16 2,0 0,-4 4,0 0,-2 L 10,10 l 0,6 0,0 z" id="ytp-id-7"></path></g><g class="ytp-fullscreen-button-corner-1"><use class="ytp-svg-shadow" xlink:href="#ytp-id-8"></use><path class="ytp-svg-fill" d="m 20,10 0,2 4,0 0,4 2,0 L 26,10 l -6,0 0,0 z" id="ytp-id-8"></path></g><g class="ytp-fullscreen-button-corner-2"><use class="ytp-svg-shadow" xlink:href="#ytp-id-9"></use><path class="ytp-svg-fill" d="m 24,24 -4,0 0,2 L 26,26 l 0,-6 -2,0 0,4 0,0 z" id="ytp-id-9"></path></g><g class="ytp-fullscreen-button-corner-3"><use class="ytp-svg-shadow" xlink:href="#ytp-id-10"></use><path class="ytp-svg-fill" d="M 12,20 10,20 10,26 l 6,0 0,-2 -4,0 0,-4 0,0 z" id="ytp-id-10"></path></g></svg>'
+    fullScreen.innerHTML = '<svg width="36px" height="36px"  viewBox="0 0 36 36" fill="white"><path d="m 7,16 v -8 h 8 v 1 h -7 v 7"></path><path d="m 19,8 h 8 v 8 h -1 v -7 h -7"></path><path d="m 7,20 v 8 h 8 v -1 h -7 v -7" ></path><path d="m 19,28 h 8 v -8 h -1 v 7 h -7" ></path></svg>'
     fullScreen.id = "fullScreen"
     fullScreen.addEventListener("click", fullScreenAction)
     pictureInPucture.addEventListener("click", function () {
@@ -430,9 +461,10 @@ function createButtonRight() {
 }
 
 function fullScreenAction() {
-    if (isFullScreen)
+    let fullScreen = document.getElementById("fullScreen")
+    if (isFullScreen) 
         document.exitFullscreen()
-    else
+    else 
         document.querySelector("html").requestFullscreen()
     document.querySelector("html").focus()
 }
