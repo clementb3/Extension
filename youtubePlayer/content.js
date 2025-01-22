@@ -35,24 +35,7 @@ async function vidmoly() {
                 changePLayer = true
             }
             if (changePLayer) {
-                let controls = document.getElementById("controlButton")
-                let video = document.querySelector("video")
-                if (controls != null && video != null) {
-                    if (Date.now() - lastClick > 500) {
-                        let nextTimeOpacity = document.getElementById("nextTime")
-                        let prevTimeOpacity = document.getElementById("previousTime")
-                        if (nextTimeOpacity != null)
-                            nextTimeOpacity.style.opacity = "0"
-                        if (prevTimeOpacity != null)
-                            prevTimeOpacity.style.opacity = "0"
-                        prevTime = 0
-                        nextTime = 0
-                    }
-                    if (Date.now() - lastClickGlobal < 2000 || video.paused)
-                        controls.style.opacity = "1"
-                    else
-                        controls.style.opacity = "0"
-                }
+                updateOpacity()
             }
             let overlay = document.getElementsByClassName("custom-overlay")[0]
             if (overlay != null) {
@@ -97,24 +80,7 @@ async function dood() {
                 changePLayer = true
             }
             if (changePLayer) {
-                let controls = document.getElementById("controlButton")
-                let video = document.querySelector("video")
-                if (controls != null && video != null) {
-                    if (Date.now() - lastClick > 500) {
-                        let nextTimeOpacity = document.getElementById("nextTime")
-                        let prevTimeOpacity = document.getElementById("previousTime")
-                        if (nextTimeOpacity != null)
-                            nextTimeOpacity.style.opacity = "0"
-                        if (prevTimeOpacity != null)
-                            prevTimeOpacity.style.opacity = "0"
-                        prevTime = 0
-                        nextTime = 0
-                    }
-                    if (Date.now() - lastClickGlobal < 2000 || video.paused)
-                        controls.style.opacity = "1"
-                    else
-                        controls.style.opacity = "0"
-                }
+                updateOpacity()
             }
             let overay = document.getElementsByClassName("custom-overlay")[0]
             if (overay != null) {
@@ -152,24 +118,7 @@ async function moon() {
                 changePLayer = true
             }
             if (changePLayer) {
-                let controls = document.getElementById("controlButton")
-                let video = document.querySelector("video")
-                if (controls != null && video != null) {
-                    if (Date.now() - lastClick > 500) {
-                        let nextTimeOpacity = document.getElementById("nextTime")
-                        let prevTimeOpacity = document.getElementById("previousTime")
-                        if (nextTimeOpacity != null)
-                            nextTimeOpacity.style.opacity = "0"
-                        if (prevTimeOpacity != null)
-                            prevTimeOpacity.style.opacity = "0"
-                        prevTime = 0
-                        nextTime = 0
-                    }
-                    if (Date.now() - lastClickGlobal < 2000 || video.paused)
-                        controls.style.opacity = "1"
-                    else
-                        controls.style.opacity = "0"
-                }
+                updateOpacity()
             }
             let overlay = document.getElementsByClassName("custom-overlay")[0]
             if (overlay != null) {
@@ -178,6 +127,35 @@ async function moon() {
         }
         catch { }
         await sleep(100)
+    }
+}
+
+function updateOpacity() {
+    let controls = document.getElementById("controlButton")
+    let divPlay = document.getElementById("divPlay")
+    let video = document.querySelector("video")
+    if (controls != null && video != null) {
+        if (Date.now() - lastClick > 500) {
+            let nextTimeOpacity = document.getElementById("nextTime")
+            let prevTimeOpacity = document.getElementById("previousTime")
+            if (nextTimeOpacity != null)
+                nextTimeOpacity.style.opacity = "0"
+            if (prevTimeOpacity != null)
+                prevTimeOpacity.style.opacity = "0"
+            prevTime = 0
+            nextTime = 0
+        }
+        if (Date.now() - lastClickGlobal < 2000 || video.paused) {
+            controls.style.opacity = "1"
+            if (divPlay != null) 
+                divPlay.style.opacity = "1"
+
+        }
+        else {
+            controls.style.opacity = "0"
+            if (divPlay != null)
+                divPlay.style.opacity = "0"
+        }
     }
 }
 
@@ -462,9 +440,9 @@ function createButtonRight() {
 
 function fullScreenAction() {
     let fullScreen = document.getElementById("fullScreen")
-    if (isFullScreen) 
+    if (isFullScreen)
         document.exitFullscreen()
-    else 
+    else
         document.querySelector("html").requestFullscreen()
     document.querySelector("html").focus()
 }
@@ -483,10 +461,16 @@ function createButtonLeft() {
     play.addEventListener("click", playPause)
     let volume = document.createElement("button")
     if (video.paused) {
-        play.innerHTML = '<svg width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 18.5,22 18.5,14 12,10 z M 18.5,22 25,18 25,18 18.5,14 z"></path></svg>'
+        if (checkMobile)
+            play.innerHTML = '<svg width="100px" height="100px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 18.5,22 18.5,14 12,10 z M 18.5,22 25,18 25,18 18.5,14 z"></path></svg>'
+        else
+            play.innerHTML = '<svg width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 18.5,22 18.5,14 12,10 z M 18.5,22 25,18 25,18 18.5,14 z"></path><svg>'
     }
     else {
-        play.innerHTML = '<svg width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 16,26 16,10 12,10 z M 21,26 25,26 25,10 21,10 z"></path></svg>'
+        if (checkMobile)
+            play.innerHTML = '<svg width="100px" height="100px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 16,26 16,10 12,10 z M 21,26 25,26 25,10 21,10 z"></path></svg>'
+        else
+            play.innerHTML = '<svg width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 16,26 16,10 12,10 z M 21,26 25,26 25,10 21,10 z"></path></svg>'
     }
     video.addEventListener("pause", playPauseShow)
     video.addEventListener("play", playPauseShow)
@@ -494,7 +478,24 @@ function createButtonLeft() {
     volume.style.width = "100%"
     volume.style.background = "transparent"
     volume.style.border = "none"
-    buttonsLeft.appendChild(play)
+    if (!checkMobile())
+        buttonsLeft.appendChild(play)
+    else {
+        let divPlay = document.createElement("div")
+        console.log("mobile")
+        divPlay.id="divPlay"
+        divPlay.style.transition = "opacity .1s cubic-bezier(.4,0,1,1)"
+        divPlay.style.width = "100%"
+        divPlay.style.height = "100%"
+        divPlay.style.position = "fixed"
+        divPlay.style.alignItems = "center"
+        divPlay.style.display = "flex"
+        divPlay.style.justifyContent = "center"
+        divPlay.style.zIndex = 20000
+        divPlay.style.pointer= "all"
+        divPlay.appendChild(play)
+        document.querySelector(".jw-controls").appendChild(divPlay)
+    }
     let skipOp = document.createElement("button")
     skipOp.id = "skipOp"
     skipOp.innerHTML = '<svg width="48px" height="48px" viewBox="0 0 36 36"><style>.small {font: 10px roboto;}</style><path  d="M 30 10 L 33 16  L 26.7 17 " fill="white"></path><path d="M 3 15 Q 15 7 29 14 " stroke="white" fill="transparent"></path><text x="6" y="24" class="small" fill="white">1:30</text></svg>'
@@ -577,11 +578,18 @@ function playPauseShow() {
     let video = document.querySelector("video")
     let play = document.getElementById("playPause")
     if (video.paused && play != null) {
-        play.innerHTML = '<svg width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 18.5,22 18.5,14 12,10 z M 18.5,22 25,18 25,18 18.5,14 z"></path></svg>'
+        if (checkMobile())
+            play.innerHTML = '<svg width="100px" height="100px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 18.5,22 18.5,14 12,10 z M 18.5,22 25,18 25,18 18.5,14 z"></path>'
+        else
+            play.innerHTML = '<svg width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 18.5,22 18.5,14 12,10 z M 18.5,22 25,18 25,18 18.5,14 z"></path>'
     }
     else {
-        if (play != null)
-            play.innerHTML = '<svg width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 16,26 16,10 12,10 z M 21,26 25,26 25,10 21,10 z"></path></svg>'
+        if (play != null) {
+            if (checkMobile())
+                play.innerHTML = '<svg width="100px" height="100px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 16,26 16,10 12,10 z M 21,26 25,26 25,10 21,10 z"></path></svg>'
+            else
+                play.innerHTML = '<svg width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 16,26 16,10 12,10 z M 21,26 25,26 25,10 21,10 z"></path></svg>'
+        }
     }
 }
 
