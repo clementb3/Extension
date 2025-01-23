@@ -135,7 +135,7 @@ function updateOpacity() {
     let divPlay = document.getElementById("divPlay")
     let video = document.querySelector("video")
     if (controls != null && video != null) {
-        if (Date.now() - lastClick > 500) {
+        if (Date.now() - lastClick > 600) {
             let nextTimeOpacity = document.getElementById("nextTime")
             let prevTimeOpacity = document.getElementById("previousTime")
             if (nextTimeOpacity != null)
@@ -144,10 +144,19 @@ function updateOpacity() {
                 prevTimeOpacity.style.opacity = "0"
             prevTime = 0
             nextTime = 0
+
+        }
+        if (Date.now() - lastClick > 1000 && checkMobile()) {
+            let divPrev = document.getElementById("previousTime")
+            let divNext = document.getElementById("nextTime")
+            if (divNext.querySelector(".circle") != null)
+                divNext.removeChild(divNext.querySelector(".circle"))
+            if (divPrev.querySelector(".circle") != null)
+                divPrev.removeChild(divPrev.querySelector(".circle"))
         }
         if (Date.now() - lastClickGlobal < 2000 || video.paused) {
             controls.style.opacity = "1"
-            if (divPlay != null) 
+            if (divPlay != null)
                 divPlay.style.opacity = "1"
 
         }
@@ -224,14 +233,15 @@ function createPlayer() {
         let divNext = document.createElement("div")
         divNext.id = "nextTime"
         divNext.style.width = "100%"
-        divNext.style.height = "100%"
-        divNext.style.marginRight = "-50%"
-        divNext.style.borderRadius = "14% / 53%"
-        divNext.style.background = "#d0d0d050"
+        divNext.style.height = "auto"
+        divNext.style.margin = "-60px -50% -70px 0px"
+        divNext.style.borderRadius = "23% / 100%"
+        divNext.style.background = "rgb(73 73 73 / 44%)"
         divNext.style.opacity = "0"
         divNext.style.display = "flex"
         divNext.style.flexDirection = "row"
-        divNext.style.alignItems = "center"
+        divNext.style.overflow = "hidden"
+        divNext.style.paddingTop = "60px"
 
         let divNe = document.createElement("div")
         divNe.style.width = "90px"
@@ -239,11 +249,12 @@ function createPlayer() {
         divNe.style.display = "flex"
         divNe.style.justifyContent = "center"
         divNe.style.flexDirection = "column"
+        divNe.style.zIndex = "100"
 
         let divNextArrow = document.createElement("div")
-        divNextArrow.innerHTML = '<svg width="20px" height="20px" style="opacity:0;transition: opacity 0.1s cubic-bezier(0.4, 0, 1, 1);" viewBox="0 0 24 24" fill="#fff" xmlns="http://www.w3.org/2000/svg" stroke="#fff" transform="rotate(90)"><g id="SVGRepo_bgCarrier"></g><g id="SVGRepo_iconCarrier"> <path clip-rule="evenodd" d="M12.    3.75317L21.5509 20.2501H2.44922L12.0001 3.75317ZM5.05089 18.7501H18.9492L12.0001 Z" fill="#fff"></path> </g></svg>'
-            + '<svg width="20px" height="20px" style="opacity:0;transition: opacity 0.1s cubic-bezier(0.4, 0, 1, 1);" viewBox="0 0 24 24" fill="#fff" xmlns="http://www.w3.org/2000/svg" stroke="#fff" transform="rotate(90)"><g id="SVGRepo_bgCarrier"></g><g id="SVGRepo_iconCarrier"> <path clip-rule="evenodd" d="M12.0001 3.75317L21.5509 20.2501H2.44922L12.0001 3.75317ZM5.05089 18.7501H18.9492L12.0001 Z" fill="#fff"></path> </g></svg>'
-            + '<svg width="20px" height="20px" style="opacity:0;transition: opacity 0.1s cubic-bezier(0.4, 0, 1, 1);" viewBox="0 0 24 24" fill="#fff" xmlns="http://www.w3.org/2000/svg" stroke="#fff" transform="rotate(90)"><g id="SVGRepo_bgCarrier"></g><g id="SVGRepo_iconCarrier"> <path clip-rule="evenodd" d="M12.0001 3.75317L21.5509 20.2501H2.44922L12.0001 3.75317ZM5.05089 18.7501H18.9492L12.0001 Z" fill="#fff"></path> </g></svg>'
+        divNextArrow.innerHTML = '<svg width="20px" height="20px" style="opacity:0;transition: opacity 0.1s cubic-bezier(0.4, 0, 1, 1);" viewBox="0 0 29 32" fill="white"><path d="M3 3 v29 L26 16"></path></svg>'
+            + '<svg width="20px" height="20px" style="opacity:0;transition: opacity 0.1s cubic-bezier(0.4, 0, 1, 1);" viewBox="0 0 29 32" fill="white"><path d="M3 3 v29 L26 16"></path></svg>'
+            + '<svg width="20px" height="20px" style="opacity:0;transition: opacity 0.1s cubic-bezier(0.4, 0, 1, 1);" viewBox="0 0 29 32" fill="white"><path d="M3 3 v29 L26 16"></path></svg>'
         let textnext = document.createElement("p")
         textnext.textContent = "10 sec"
         textnext.style.color = "#fff"
@@ -251,15 +262,15 @@ function createPlayer() {
         let divPrevious = document.createElement("div")
         divPrevious.id = "previousTime"
         divPrevious.style.width = "100%"
-        divPrevious.style.height = "100%"
-        divPrevious.style.marginLeft = "-50%"
-        divPrevious.style.borderRadius = "14% / 53%"
-        divPrevious.style.background = "#d0d0d050"
+        divPrevious.style.height = "auto"
+        divPrevious.style.margin = "-60px 0 -70px -50%"
+        divPrevious.style.borderRadius = "23% / 100%"
+        divPrevious.style.background = "rgb(73 73 73 / 44%)"
         divPrevious.style.opacity = "0"
         divPrevious.style.display = "flex"
         divPrevious.style.flexDirection = "row-reverse"
-        divPrevious.style.alignItems = "center"
-
+        divPrevious.style.overflow = "hidden"
+        divPrevious.style.paddingTop = "60px"
 
         let divPrev = document.createElement("div")
         divPrev.style.width = "90px"
@@ -267,12 +278,12 @@ function createPlayer() {
         divPrev.style.display = "flex"
         divPrev.style.justifyContent = "center"
         divPrev.style.flexDirection = "column"
-        divPrev.style.alignItems = "center"
+        divPrev.style.zIndex = "100"
 
         let divPreviousArrow = document.createElement("div")
-        divPreviousArrow.innerHTML = '<svg width="20px" height="20px" style="opacity:0;transition: opacity 0.1s cubic-bezier(0.4, 0, 1, 1);" viewBox="0 0 24 24" fill="#fff" xmlns="http://www.w3.org/2000/svg" stroke="#fff" transform="rotate(270)"><g id="SVGRepo_bgCarrier"></g><g id="SVGRepo_iconCarrier"> <path clip-rule="evenodd" d="M12.0001 3.75317L21.5509 20.2501H2.44922L12.0001 3.75317ZM5.05089 18.7501H18.9492L12.0001 Z" fill="#fff"></path> </g></svg>'
-            + '<svg width="20px" height="20px" style="opacity:0;transition: opacity 0.1s cubic-bezier(0.4, 0, 1, 1);" viewBox="0 0 24 24" fill="#fff" xmlns="http://www.w3.org/2000/svg" stroke="#fff" transform="rotate(270)"><g id="SVGRepo_bgCarrier"></g><g id="SVGRepo_iconCarrier"> <path clip-rule="evenodd" d="M12.0001 3.75317L21.5509 20.2501H2.44922L12.0001 3.75317ZM5.05089 18.7501H18.9492L12.0001 Z" fill="#fff"></path> </g></svg>'
-            + '<svg width="20px" height="20px" style="opacity:0;transition: opacity 0.1s cubic-bezier(0.4, 0, 1, 1);" viewBox="0 0 24 24" fill="#fff" xmlns="http://www.w3.org/2000/svg" stroke="#fff" transform="rotate(270)"><g id="SVGRepo_bgCarrier"></g><g id="SVGRepo_iconCarrier"> <path clip-rule="evenodd" d="M12.0001 3.75317L21.5509 20.2501H2.44922L12.0001 3.75317ZM5.05089 18.7501H18.9492L12.0001 Z" fill="#fff"></path> </g></svg>'
+        divPreviousArrow.innerHTML = '<svg width="20px" height="20px" style="opacity:0;transition: opacity 0.1s cubic-bezier(0.4, 0, 1, 1);" transform="rotate(180)" viewBox="0 0 29 32" fill="white"><path d="M3 3 v29 L26 16"></path></svg>'
+            + '<svg width="20px" height="20px" style="opacity:0;transition: opacity 0.1s cubic-bezier(0.4, 0, 1, 1);" transform="rotate(180)" viewBox="0 0 29 32" fill="white"><path d="M3 3 v29 L26 16"></path></svg>'
+            + '<svg width="20px" height="20px" style="opacity:0;transition: opacity 0.1s cubic-bezier(0.4, 0, 1, 1);" transform="rotate(180)" viewBox="0 0 29 32" fill="white"><path d="M3 3 v29 L26 16"></path></svg>'
         divNext.style.transition = "opacity .1s cubic-bezier(.4,0,1,1)"
         divPrevious.style.transition = "opacity .1s cubic-bezier(.4,0,1,1)"
 
@@ -298,21 +309,20 @@ function createPlayer() {
 }
 
 function clickPlayer(event) {
-    console.log("click")
     let clickPos = event.clientX / document.querySelector("html").offsetWidth
-
-    if (checkMobile() && document.querySelector("html").offsetHeight - event.clientY > 50) {
+    if (checkMobile() && document.querySelector("html").offsetHeight - event.clientY > 50
+        && (document.querySelector("html").offsetWidth / 2 - 50 > event.clientX || document.querySelector("html").offsetWidth / 2 + 50 < event.clientX)) {
         if (clickPos < 0.5)
-            previousVideo()
+            previousVideo(event)
         else
-            nextVideo()
+            nextVideo(event)
     }
 
     lastClickGlobal = Date.now()
 }
 
 
-function previousVideo() {
+function previousVideo(event) {
     let time = Date.now() - lastClick;
     lastClick = Date.now()
     if (time < 500) {
@@ -326,10 +336,49 @@ function previousVideo() {
         let time = video.currentTime - 10
         video.currentTime = time
         updatetimeCodeWithValue(time)
+        propagationClick(event)
     }
-
 }
-function nextVideo() {
+
+async function propagationClick(event) {
+    let documentOffsetX = document.querySelector("html").offsetWidth
+    let documentOffsetY = document.querySelector("html").offsetHeight
+    let clickPos = event.clientX / documentOffsetX
+    let divPrev = document.getElementById("previousTime")
+    let divNext = document.getElementById("nextTime")
+    let circle = document.createElement("div")
+    if (divNext.querySelector(".circle") != null)
+        divNext.removeChild(divNext.querySelector(".circle"))
+    if (divPrev.querySelector(".circle") != null)
+        divPrev.removeChild(divPrev.querySelector(".circle"))
+    circle.style.borderRadius = "100%"
+    circle.style.width = "10px"
+    circle.style.height = "10px"
+    circle.style.background = "rgb(73 73 73 / 44%)"
+    circle.style.transition = "all .3s cubic-bezier(.4, 0, 1, 1)"
+    let divCircle = document.createElement("div")
+    divCircle.style.width = "10000px"
+    divCircle.style.height = "10000px"
+    divCircle.style.marginTop = -(10000 - documentOffsetY) / 2 + (event.clientY - documentOffsetY / 2)
+    divCircle.style.marginLeft = -(10000 - (10000 - documentOffsetX / 2) / 2 - (event.clientX - documentOffsetX / 4))
+    divCircle.style.marginRight = -(10000 - documentOffsetX / 2) / 2 - (event.clientX - documentOffsetX / 4)
+    divCircle.className = "circle"
+    divCircle.style.display = "flex"
+    divCircle.style.alignItems = "center"
+    divCircle.style.justifyContent = "center"
+    divCircle.appendChild(circle)
+    divCircle.style.zIndex = 10
+    if (clickPos > 0.5) {
+        divNext.prepend(divCircle)
+    }
+    else {
+        divPrev.prepend(divCircle)
+    }
+    await sleep(50)
+    circle.style.width = "650px"
+    circle.style.height = "650px"
+}
+function nextVideo(event) {
     let time = Date.now() - lastClick;
     lastClick = Date.now()
     if (time < 500) {
@@ -343,6 +392,8 @@ function nextVideo() {
         let time = video.currentTime + 10
         video.currentTime = time
         updatetimeCodeWithValue(time)
+        propagationClick(event)
+
     }
 }
 
@@ -351,14 +402,14 @@ function createBar() {
     let bar = document.createElement("div")
     bar.style.background = "#FFFFFF33"
     bar.style.width = "100%"
-    bar.style.height = "5px"
+    bar.style.height = "3px"
     bar.id = "bar"
     let barProgress = document.createElement("div")
     barProgress.style.background = "linear-gradient(to right, #f03 80%, #ff2791 100%)"
     barProgress.style.backgroundSize = "100%"
     barProgress.style.height = "100%"
     barProgress.style.width = "0%"
-    barProgress.style.marginBottom = "-9px"
+    barProgress.style.marginBottom = "-7px"
     barProgress.id = "barProgress"
     bar.appendChild(barProgress)
 
@@ -454,23 +505,22 @@ function createButtonLeft() {
     buttonsLeft.style.display = "flex"
     buttonsLeft.style.alignItems = "center"
     let play = document.createElement("button")
-    play.style.background = "transparent"
     play.style.border = "none"
+    if (checkMobile()) {
+        play.style.background = "rgb(73 73 73 / 44%)"
+        play.style.borderRadius = "100%"
+        play.style.width = "50px"
+        play.style.height = "50px"
+    }
     play.setAttribute("status", "play")
     play.id = "playPause"
     play.addEventListener("click", playPause)
     let volume = document.createElement("button")
     if (video.paused) {
-        if (checkMobile)
-            play.innerHTML = '<svg width="100px" height="100px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 18.5,22 18.5,14 12,10 z M 18.5,22 25,18 25,18 18.5,14 z"></path></svg>'
-        else
-            play.innerHTML = '<svg width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 18.5,22 18.5,14 12,10 z M 18.5,22 25,18 25,18 18.5,14 z"></path><svg>'
+        play.innerHTML = '<svg style="margin-left:-3px" width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 18.5,22 18.5,14 12,10 z M 18.5,22 25,18 25,18 18.5,14 z"></path><svg>'
     }
     else {
-        if (checkMobile)
-            play.innerHTML = '<svg width="100px" height="100px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 16,26 16,10 12,10 z M 21,26 25,26 25,10 21,10 z"></path></svg>'
-        else
-            play.innerHTML = '<svg width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 16,26 16,10 12,10 z M 21,26 25,26 25,10 21,10 z"></path></svg>'
+        play.innerHTML = '<svg style="margin-left:-4px" width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 16,26 16,10 12,10 z M 21,26 25,26 25,10 21,10 z"></path></svg>'
     }
     video.addEventListener("pause", playPauseShow)
     video.addEventListener("play", playPauseShow)
@@ -483,7 +533,7 @@ function createButtonLeft() {
     else {
         let divPlay = document.createElement("div")
         console.log("mobile")
-        divPlay.id="divPlay"
+        divPlay.id = "divPlay"
         divPlay.style.transition = "opacity .1s cubic-bezier(.4,0,1,1)"
         divPlay.style.width = "100%"
         divPlay.style.height = "100%"
@@ -492,7 +542,7 @@ function createButtonLeft() {
         divPlay.style.display = "flex"
         divPlay.style.justifyContent = "center"
         divPlay.style.zIndex = 20000
-        divPlay.style.pointer= "all"
+        divPlay.style.pointer = "all"
         divPlay.appendChild(play)
         document.querySelector(".jw-controls").appendChild(divPlay)
     }
@@ -547,30 +597,28 @@ function updatetimeCodeWithValue(currentTime) {
 }
 
 async function nextAnimation() {
-    let index = 0
-    for (let svg of document.getElementById("nextTime").querySelectorAll("svg")) {
-        svg.style.opacity = 1
-        await sleep(100)
-        if (index > 0) {
-            document.getElementById("nextTime").querySelectorAll("svg")[index - 1].style.opacity = 0
-        }
-        index = index + 1
-    }
-    await sleep(100)
+    document.getElementById("nextTime").querySelectorAll("svg")[0].style.opacity = 1
+    await sleep(150)
+    document.getElementById("nextTime").querySelectorAll("svg")[1].style.opacity = 1
+    await sleep(150)
+    document.getElementById("nextTime").querySelectorAll("svg")[0].style.opacity = 0
+    document.getElementById("nextTime").querySelectorAll("svg")[2].style.opacity = 1
+    await sleep(150)
+    document.getElementById("nextTime").querySelectorAll("svg")[1].style.opacity = 0
+    await sleep(150)
     document.getElementById("nextTime").querySelectorAll("svg")[2].style.opacity = 0
 }
 
 async function prevAnimation() {
-    let index = 2
-    for (let svg of [...document.getElementById("previousTime").querySelectorAll("svg")].reverse()) {
-        svg.style.opacity = 1
-        await sleep(100)
-        if (index < 2) {
-            document.getElementById("previousTime").querySelectorAll("svg")[index + 1].style.opacity = 0
-        }
-        index = index - 1
-    }
-    await sleep(100)
+    document.getElementById("previousTime").querySelectorAll("svg")[2].style.opacity = 1
+    await sleep(150)
+    document.getElementById("previousTime").querySelectorAll("svg")[1].style.opacity = 1
+    await sleep(150)
+    document.getElementById("previousTime").querySelectorAll("svg")[2].style.opacity = 0
+    document.getElementById("previousTime").querySelectorAll("svg")[0].style.opacity = 1
+    await sleep(150)
+    document.getElementById("previousTime").querySelectorAll("svg")[1].style.opacity = 0
+    await sleep(150)
     document.getElementById("previousTime").querySelectorAll("svg")[0].style.opacity = 0
 }
 
@@ -578,17 +626,11 @@ function playPauseShow() {
     let video = document.querySelector("video")
     let play = document.getElementById("playPause")
     if (video.paused && play != null) {
-        if (checkMobile())
-            play.innerHTML = '<svg width="100px" height="100px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 18.5,22 18.5,14 12,10 z M 18.5,22 25,18 25,18 18.5,14 z"></path>'
-        else
-            play.innerHTML = '<svg width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 18.5,22 18.5,14 12,10 z M 18.5,22 25,18 25,18 18.5,14 z"></path>'
+        play.innerHTML = '<svg style="margin-left:-3px" width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 18.5,22 18.5,14 12,10 z M 18.5,22 25,18 25,18 18.5,14 z"></path>'
     }
     else {
         if (play != null) {
-            if (checkMobile())
-                play.innerHTML = '<svg width="100px" height="100px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 16,26 16,10 12,10 z M 21,26 25,26 25,10 21,10 z"></path></svg>'
-            else
-                play.innerHTML = '<svg width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 16,26 16,10 12,10 z M 21,26 25,26 25,10 21,10 z"></path></svg>'
+            play.innerHTML = '<svg style="margin-left:-4px" width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 16,26 16,10 12,10 z M 21,26 25,26 25,10 21,10 z"></path></svg>'
         }
     }
 }
