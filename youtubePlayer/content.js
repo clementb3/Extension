@@ -225,6 +225,7 @@ function createPlayer() {
     controls.style.zIndex = 1000
     controls.id = "controlButton"
     div.appendChild(controls)
+    div.style.zIndex=50000
     if (checkMobile()) {
         let div2 = document.createElement("div")
         div2.style.width = "100%"
