@@ -4,7 +4,7 @@ var lastClickGlobal = Date.now()
 let prevTime = 0
 let nextTime = 0
 let isFullScreen = false
-
+let run = false
 document.addEventListener('fullscreenchange', () => {
     isFullScreen = !isFullScreen
 });
@@ -19,6 +19,7 @@ async function vidmoly() {
     let changePLayer = false
     while (true) {
         try {
+            run = true
             if (!play)
                 play = playAuto(play)
             if (!changePLayer) {
@@ -52,6 +53,7 @@ async function dood() {
     let changePLayer = false
     while (true) {
         try {
+            run = true
             if (!play)
                 play = playAuto(play)
             if (!changePLayer) {
@@ -68,7 +70,7 @@ async function dood() {
                     controls.style.alignItems = "flex-end"
                     controls.style.flexDirection = "column-reverse"
                     controls.style.pointerEvents = "All"
-                    controls.className = "jw-controls"
+                    controls.className = "controls"
                     controls.style.zIndex = 100
                     controls.style.position = "fixed"
                     player.appendChild(controls)
@@ -102,10 +104,11 @@ async function moon() {
     let changePLayer = false
     while (true) {
         try {
+            run = true
             if (!play)
                 play = playAuto(play)
             if (!changePLayer) {
-                let controls = document.querySelector(".jw-controls")
+                document.querySelector(".jw-controls").className = "controls"
                 if (controls != null) {
                     controls.innerHTML = ""
                     controls.style.display = "flex"
@@ -187,16 +190,45 @@ function playAuto(play) {
     return false
 }
 
+function removeEvent() {
+    try {
+        document.body.removeEventListener('click', getEventListeners(document.body).click[0].listener)
+        document.body.removeEventListener('touchend', getEventListeners(document.body).touchend[0].listener)
+        for (var i = 0; i < 4; i++) {
+            document.body.removeEventListener('touchmove', getEventListeners(document.body).touchmove[i].listener)
+            document.body.removeEventListener('touchstart', getEventListeners(document.body).touchstart[i].listener)
+
+        }
+        document.body.removeEventListener('focusin', getEventListeners(document.body).focusin[0].listener)
+        document.body.removeEventListener('paste', getEventListeners(document.body).paste[0].listener)
+        document.body.removeEventListener('mousemove', getEventListeners(document.body).mousemove[0].listener)
+        document.body.removeEventListener('scroll', getEventListeners(document.body).scroll[0].listener)
+    }
+    catch (ex) {
+        console.log(ex)
+    }
+}
+
 async function main() {
-    if (location.href.includes("https://vidmoly.to"))
-        vidmoly()
-    if (location.href.includes("referer=v6.voiranime.com"))
-        moon()
-    if (location.href.includes("https://dooodster.com"))
-        dood()
+    while (!run) {
+        try {
+            if (location.href.includes("https://vidmoly.to"))
+                vidmoly()
+            if (location.href.includes("referer=v6.voiranime.com"))
+                moon()
+            if (location.href.includes("https://dooodster.com"))
+                dood()
+            await sleep(200)
+        }
+        catch (ex) {
+            console.error(ex)
+            await sleep(200)
+        }
+    }
 }
 
 function createPlayer() {
+    document.querySelector("html").style.pointerEvents = "none"
     document.querySelector(".jw-controls").addEventListener("click", clickPlayer)
     document.querySelector("html").addEventListener("fullscreenchange", function (e) {
         if (isFullScreen) {
@@ -225,7 +257,7 @@ function createPlayer() {
     controls.style.zIndex = 1000
     controls.id = "controlButton"
     div.appendChild(controls)
-    div.style.zIndex=50000
+    div.style.zIndex = 50000
     if (checkMobile()) {
         let div2 = document.createElement("div")
         div2.style.width = "100%"
@@ -237,7 +269,7 @@ function createPlayer() {
         divNext.style.height = "auto"
         divNext.style.margin = "-60px -50% -70px 0px"
         divNext.style.borderRadius = "23% / 100%"
-        divNext.style.background = "rgb(73 73 73 / 44%)"
+        divNext.style.background = "rgb(201 201 201 / 44%)"
         divNext.style.opacity = "0"
         divNext.style.display = "flex"
         divNext.style.flexDirection = "row"
@@ -266,7 +298,7 @@ function createPlayer() {
         divPrevious.style.height = "auto"
         divPrevious.style.margin = "-60px 0 -70px -50%"
         divPrevious.style.borderRadius = "23% / 100%"
-        divPrevious.style.background = "rgb(73 73 73 / 44%)"
+        divPrevious.style.background = "rgb(201 201 201 / 44%)"
         divPrevious.style.opacity = "0"
         divPrevious.style.display = "flex"
         divPrevious.style.flexDirection = "row-reverse"
@@ -410,7 +442,7 @@ function createBar() {
     barProgress.style.backgroundSize = "100%"
     barProgress.style.height = "100%"
     barProgress.style.width = "0%"
-    barProgress.style.marginBottom = "-7px"
+    barProgress.style.marginBottom = "-3px"
     barProgress.id = "barProgress"
     bar.appendChild(barProgress)
 
@@ -419,6 +451,7 @@ function createBar() {
     slider.style.height = "13px"
     slider.style.background = "#f03"
     slider.style.borderRadius = "100%"
+    slider.style.marginTop = "-8px"
     slider.id = "slider"
     slider.addEventListener('mousedown', function () { mouseDown = true }, true);
     slider.addEventListener('pointerdown', function () { mouseDown = true }, true);
@@ -507,6 +540,8 @@ function createButtonLeft() {
     buttonsLeft.style.alignItems = "center"
     let play = document.createElement("button")
     play.style.border = "none"
+    play.style.background = "transparent"
+    play.style.background = "transparent"
     if (checkMobile()) {
         play.style.background = "rgb(73 73 73 / 44%)"
         play.style.borderRadius = "100%"
