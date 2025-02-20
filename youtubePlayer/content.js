@@ -9,6 +9,14 @@ document.addEventListener('fullscreenchange', () => {
     isFullScreen = !isFullScreen
 });
 
+
+document.addEventListener('orientationchange', () => {
+    console.log(isFullScreen)
+    if (isFullScreen) {
+        document.querySelector("html").requestFullscreen()
+    }
+});
+
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
