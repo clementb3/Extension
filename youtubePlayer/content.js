@@ -4,6 +4,7 @@ var lastClickGlobal = Date.now()
 let prevTime = 0
 let nextTime = 0
 let isFullScreen = false
+let isFullScreen2 = false
 let run = false
 document.addEventListener('fullscreenchange', () => {
     isFullScreen = !isFullScreen
@@ -11,7 +12,7 @@ document.addEventListener('fullscreenchange', () => {
 
 
 document.addEventListener('orientationchange', () => {
-    console.log(isFullScreen)
+    console.error(isFullScreen2)
     if (isFullScreen) {
         document.querySelector("html").requestFullscreen()
     }
@@ -240,7 +241,7 @@ function createPlayer() {
     document.querySelector(".jw-controls").addEventListener("click", clickPlayer)
     document.querySelector("html").addEventListener("fullscreenchange", function (e) {
         if (isFullScreen) {
-            document.exitFullscreen()
+            document.querySelector("html").exitFullscreen()
             fullScreen.innerHTML = '<svg width="36px" height="36px"  viewBox="0 0 36 36" fill="white"><path d="m 7,16 v -8 h 8 v 1 h -7 v 7"></path><path d="m 19,8 h 8 v 8 h -1 v -7 h -7"></path><path d="m 7,20 v 8 h 8 v -1 h -7 v -7" ></path><path d="m 19,28 h 8 v -8 h -1 v 7 h -7" ></path></svg>'
         }
         else {
