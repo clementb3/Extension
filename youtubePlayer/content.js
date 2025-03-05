@@ -28,7 +28,6 @@ document.addEventListener('fullscreenchange', () => {
 });
 
 document.addEventListener("keydown", function (event) {
-    console.log(event.key == "ArrowRight")
     if (event.key == "ArrowRight") {
         let video = document.querySelector("video")
         let time = video.currentTime + Time
@@ -107,6 +106,7 @@ async function Player() {
 
 function updateOpacity() {
     let controls = document.getElementById("controlButton")
+    let body = document.querySelector("body")
     let divPlay = document.getElementById("divPlay")
     let video = document.querySelector("video")
     if (controls != null && video != null) {
@@ -132,11 +132,13 @@ function updateOpacity() {
         }
         if (Date.now() - lastClickGlobal < 2000 || video.paused) {
             controls.style.opacity = "1"
+            body.style.cursor = "auto"
             if (divPlay != null)
                 divPlay.style.opacity = "1"
 
         }
         else {
+            body.style.cursor = "none"
             controls.style.opacity = "0"
             if (divPlay != null)
                 divPlay.style.opacity = "0"
