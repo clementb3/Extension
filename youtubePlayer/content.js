@@ -28,6 +28,25 @@ document.addEventListener('fullscreenchange', () => {
 });
 
 document.addEventListener("keydown", function (event) {
+    console.log(event.key == "ArrowRight")
+    if (event.key == "ArrowRight") {
+        let video = document.querySelector("video")
+        let time = video.currentTime + Time
+        video.currentTime = time
+        updatetimeCodeWithValue(time)
+    }
+    if (event.key == "ArrowLeft") {
+        let video = document.querySelector("video")
+        let time = video.currentTime - Time
+        video.currentTime = time
+        updatetimeCodeWithValue(time)
+    }
+    if (event.key == "f") {
+        fullScreenAction()
+    }
+    if (event.key == "k") {
+        playPause()
+    }
 
 })
 
@@ -460,7 +479,7 @@ function fullScreenAction() {
         document.exitFullscreen()
     else
         document.querySelector("html").requestFullscreen()
-    document.querySelector("html").focus()
+    document.querySelector("#playPause").focus()
 }
 
 function createButtonLeft() {
