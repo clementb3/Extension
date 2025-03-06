@@ -46,6 +46,9 @@ document.addEventListener("keydown", function (event) {
     if (event.key == "k") {
         playPause()
     }
+    if (event.key == "s") {
+        skip()
+    }
 
 })
 
