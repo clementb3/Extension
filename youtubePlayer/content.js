@@ -57,6 +57,8 @@ function sleep(ms) {
 }
 
 function hideAll(elementHtml) {
+    if (document.querySelector("video" == null)) 
+        return true;
     let hasVideo = false
     let elementChild = elementHtml.children
     if (elementHtml.nodeName == "VIDEO" || elementHtml.className == "controls" || elementHtml.className == "setting") {
