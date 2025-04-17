@@ -287,8 +287,9 @@ function clickPlayer(event) {
         }
     }
 
-    if (checkMobile() && document.querySelector("html").offsetHeight - event.clientY > 50
-        && (document.querySelector("html").offsetWidth / 2 - 50 > event.clientX || document.querySelector("html").offsetWidth / 2 + 50 < event.clientX)) {
+
+    if (checkMobile() && document.querySelector(".controls").offsetHeight - event.clientY > 50
+        && (document.querySelector(".controls").offsetWidth / 2 - 50 > event.clientX || document.querySelector(".controls").offsetWidth / 2 + 50 < event.clientX)) {
         if (clickPos < 0.5)
             previousVideo(event)
         else
@@ -318,8 +319,8 @@ function previousVideo(event) {
 }
 
 async function propagationClick(event) {
-    let documentOffsetX = document.querySelector("html").offsetWidth
-    let documentOffsetY = document.querySelector("html").offsetHeight
+    let documentOffsetX = document.querySelector(".controls").offsetWidth
+    let documentOffsetY = document.querySelector(".controls").offsetHeight
     let clickPos = event.clientX / documentOffsetX
     let divPrev = document.getElementById("previousTime")
     let divNext = document.getElementById("nextTime")
