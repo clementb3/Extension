@@ -19,6 +19,7 @@ let svgPause = '<svg style="margin-left:-3px" width="48px" height="48px" viewBox
 let svgPlay = '<svg style="margin-left:-4px" width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 16,26 16,10 12,10 z M 21,26 25,26 25,10 21,10 z"></path></svg>'
 let svgSkipOp = '<svg width="48px" height="48px" viewBox="0 0 36 36"><style>.small {font: 10px roboto;}</style><path  d="M 30 10 L 33 16  L 26.7 17 " fill="white"></path><path d="M 3 15 Q 15 7 29 14 " stroke="white" fill="transparent"></path><text x="6" y="24" class="small" fill="white">1:30</text></svg>'
 let timeTemp = localStorage.getItem("time");
+
 if (timeTemp != null) {
     Time = parseInt(timeTemp)
 }
@@ -57,30 +58,30 @@ function sleep(ms) {
 }
 
 function hideAll(elementHtml) {
-    if (document.querySelector("video" == null)) 
+    if (document.querySelector("video" == null))
         return true;
-    let hasVideo = false
-    let elementChild = elementHtml.children
-    if (elementHtml.nodeName == "VIDEO" || elementHtml.className == "controls" || elementHtml.className == "setting") {
+    if (elementHtml.className == "controls" || elementHtml.className == "setting") {
+
+        elementHtml.style.visibility = 'visible'
         return true
     }
+    let elementChild = elementHtml.children
     if (elementChild.length == 0) {
-        elementHtml.style.visibility = 'hidden'
+        if (elementHtml.nodeName == "VIDEO") {
+            elementHtml.style.pointerEvents = 'none'
+            elementHtml.style.visibility = 'visible'
+            return true
+        }
         elementHtml.style.pointerEvents = 'none'
+        elementHtml.style.visibility = 'hidden'
         return false
     }
     for (let element of elementChild) {
-        if (hideAll(element))
-            hasVideo = true
+        hideAll(element)
     }
     elementHtml.style.pointerEvents = 'none'
-    if (hasVideo) {
-        return true
-    }
-    else {
-        elementHtml.style.visibility = 'hidden'
-        return false
-    }
+    elementHtml.style.visibility = 'hidden'
+    return false
 }
 
 async function Player() {
@@ -191,7 +192,8 @@ function removeEvent() {
 
 async function main() {
     while (!changePLayer || document.getElementsByClassName("controls").length == 0) {
-        Player()
+        if (document.querySelector("video") != null)
+            Player()
         hideAll(document.querySelector("body"))
         updateOpacity()
         await sleep(50)
