@@ -159,7 +159,8 @@ function playAuto(play) {
             playButton = document.querySelector(".jw-icon-display")
         if (location.href.includes("https://dooodster.com"))
             playButton = document.querySelector(".vjs-big-play-button")
-
+        if (location.href.includes("https://jilliandescribecompany.com"))
+            playButton = document.querySelector(".icon")
         if (playButton != null && !play) {
             playButton.click()
             return true

@@ -37,6 +37,10 @@ button:focus
     overflow:visible;
 }
 
+    .controlBar p{
+        margin:0;
+    }
+
     .controlBar * {
         overflow: visible
     }

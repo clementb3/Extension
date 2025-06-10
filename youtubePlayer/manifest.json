@@ -26,7 +26,8 @@
         "https://vidmoly.to/*",
         "https://*/*referer=v6.voiranime.com",
         "https://my.mail.ru/*",
-        "https://dooodster.com/*"
+        "https://dooodster.com/*",
+        "https://jilliandescribecompany.com/*"
       ],
       "all_frames": true,
       "run_at": "document_idle",
