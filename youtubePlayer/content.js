@@ -58,6 +58,14 @@ function sleep(ms) {
 }
 
 function hideAll(elementHtml) {
+    hide(elementHtml)
+    let body = document.querySelector("body")
+    body.style.visibility = "visible"
+    body.style.background = "black"
+
+}
+
+function hide(elementHtml) {
     if (document.querySelector("video" == null))
         return true;
     if (elementHtml.className == "controls" || elementHtml.className == "setting") {
@@ -97,6 +105,7 @@ async function Player() {
                 controls.innerHTML = ""
                 controls.className = "controls"
                 controls.appendChild(createPlayer())
+            //    setWidth()
             }
             changePLayer = true
         }
@@ -155,7 +164,7 @@ function updateOpacity() {
 function playAuto(play) {
     try {
         let playButton;
-        if (location.href.includes("https://vidmoly.to"))
+        if (location.href.includes("https://vidmoly.to") || location.href.includes("ref=v6.voiranime.com") )
             playButton = document.querySelector(".jw-icon-display")
         if (location.href.includes("https://dooodster.com"))
             playButton = document.querySelector(".vjs-big-play-button")
@@ -170,6 +179,11 @@ function playAuto(play) {
         console.error(ex)
     }
     return false
+}
+
+function setWidth() {
+    if (location.href.includes("ref=v6.voiranime.com") || location.href.includes("https://vidmoly.to"))
+        document.querySelector(".controls").style.height = "95%"
 }
 
 function removeEvent() {

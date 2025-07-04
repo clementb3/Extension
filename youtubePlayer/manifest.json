@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Youtube style player",
-  "version": "2.2.1",
+  "version": "3.1.1",
   "permissions": [
     "storage",
     "notifications",
@@ -25,6 +25,7 @@
       "matches": [
         "https://vidmoly.to/*",
         "https://*/*referer=v6.voiranime.com",
+        "https://*/*ref=v6.voiranime.com",
         "https://my.mail.ru/*",
         "https://dooodster.com/*",
         "https://jilliandescribecompany.com/*"
