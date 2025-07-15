@@ -3,11 +3,14 @@ var lastClick = Date.now()
 var lastClickGlobal = Date.now()
 let prevTime = 0
 let nextTime = 0
-let Time = 10
+let timeInit = 0
+let timeMov = 10
 let isFullScreen = false
 let play = false
 let changePLayer = false
 let doubleTaps = [1, 2, 3, 5, 10, 15, 20]
+let title = "";
+let ep = "";
 // Svg Icon
 let svgFullscreenOn = '<svg width="36px" height="36px"  viewBox="0 0 36 36" fill="white"><path d="m 7,16 v -8 h 8 v 1 h -7 v 7"></path><path d="m 19,8 h 8 v 8 h -1 v -7 h -7"></path><path d="m 7,20 v 8 h 8 v -1 h -7 v -7" ></path><path d="m 19,28 h 8 v -8 h -1 v 7 h -7" ></path></svg>'
 let svgFullscreenOff = '<svg width="36px" height="36px  " viewBox="0 0 36 36" fill="white"><path d="m 7,15 h 7 v -7 h -1 v 6 h -6" ></path><path d="m 21,8 v 7 h 7 v -1 h -6 v -6" ></path><path d="m 7,22 h 7 v 7 h -1 v -6 h -6"></path><path d="m 21,29 v -7 h 7 v 1 h -6 v 6"></path></svg>'
@@ -18,11 +21,27 @@ let svgPictureInPicture = '<svg width="48px" height="48px"  viewBox="0 0 36 36">
 let svgPause = '<svg style="margin-left:-3px" width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 18.5,22 18.5,14 12,10 z M 18.5,22 25,18 25,18 18.5,14 z"></path><svg>'
 let svgPlay = '<svg style="margin-left:-4px" width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 16,26 16,10 12,10 z M 21,26 25,26 25,10 21,10 z"></path></svg>'
 let svgSkipOp = '<svg width="48px" height="48px" viewBox="0 0 36 36"><style>.small {font: 10px roboto;}</style><path  d="M 30 10 L 33 16  L 26.7 17 " fill="white"></path><path d="M 3 15 Q 15 7 29 14 " stroke="white" fill="transparent"></path><text x="6" y="24" class="small" fill="white">1:30</text></svg>'
-let timeTemp = localStorage.getItem("time");
 
-if (timeTemp != null) {
-    Time = parseInt(timeTemp)
-}
+const isTop = window === window.top;
+chrome.runtime.sendMessage({
+    from: isTop ? "top" : "iframe",
+    type: "data",
+    url : location.href
+});
+
+chrome.runtime.onMessage.addListener((msg) => {
+    if (msg.relay && msg.payload.from !== "iframe") {
+        console.log('Recu iframe :', msg.payload);
+        if (msg.payload.type == "title") {
+            title= msg.payload.title
+            ep = msg.payload.ep
+            timeInit = msg.payload.time
+        }
+    }
+});
+main()
+
+
 
 document.addEventListener('fullscreenchange', () => {
     isFullScreen = !isFullScreen
@@ -31,13 +50,13 @@ document.addEventListener('fullscreenchange', () => {
 document.addEventListener("keydown", function (event) {
     if (event.key == "ArrowRight") {
         let video = document.querySelector("video")
-        let time = video.currentTime + Time
+        let time = video.currentTime + timeMov
         video.currentTime = time
         updatetimeCodeWithValue(time)
     }
     if (event.key == "ArrowLeft") {
         let video = document.querySelector("video")
-        let time = video.currentTime - Time
+        let time = video.currentTime - timeMov
         video.currentTime = time
         updatetimeCodeWithValue(time)
     }
@@ -105,6 +124,7 @@ async function Player() {
                 controls.innerHTML = ""
                 controls.className = "controls"
                 controls.appendChild(createPlayer())
+                document.querySelector("video").addEventListener("loadeddata", () => { document.querySelector("video").currentTime = timeInit })
             //    setWidth()
             }
             changePLayer = true
@@ -135,15 +155,6 @@ function updateOpacity() {
             prevTime = 0
             nextTime = 0
 
-        }
-        if (Date.now() - lastClick > 1000 && checkMobile()) {
-
-            let divPrev = document.getElementById("previousTime")
-            let divNext = document.getElementById("nextTime")
-            if (divNext.querySelector(".circleDiv") != null)
-                divNext.removeChild(divNext.querySelector(".circleDiv"))
-            if (divPrev.querySelector(".circleDiv") != null)
-                divPrev.removeChild(divPrev.querySelector(".circleDiv"))
         }
         if (Date.now() - lastClickGlobal < 2000 || video.paused) {
             controls.style.opacity = "1"
@@ -319,14 +330,14 @@ function previousVideo(event) {
     let time = Date.now() - lastClick;
     lastClick = Date.now()
     if (time < 500) {
-        prevTime = prevTime + Time
+        prevTime = prevTime + timeMov
         nextTime = 0
         document.getElementById("textPrev").textContent = prevTime + " sec"
         document.getElementById("previousTime").style.opacity = "1"
         document.getElementById("nextTime").style.opacity = "0"
         prevAnimation()
         let video = document.querySelector("video")
-        let time = video.currentTime - Time
+        let time = video.currentTime - timeMov
         video.currentTime = time
         updatetimeCodeWithValue(time)
         propagationClick(event)
@@ -346,11 +357,13 @@ async function propagationClick(event) {
         divPrev.removeChild(divPrev.querySelector(".circleDiv"))
     circle.className = "circle"
     let divCircle = document.createElement("div")
-    divCircle.style.marginTop = -(10000 - documentOffsetY) / 2 + (event.clientY - documentOffsetY / 2)
-    divCircle.style.marginLeft = -(10000 - (10000 - documentOffsetX / 2) / 2 - (event.clientX - documentOffsetX / 4))
-    divCircle.style.marginRight = -(10000 - documentOffsetX / 2) / 2 - (event.clientX - documentOffsetX / 4)
+    divCircle.style.marginTop = -(10000 - documentOffsetY) / 2 + (event.clientY - documentOffsetY / 2) + "px"
+    divCircle.style.marginLeft = -(10000 - (10000 - documentOffsetX / 2) / 2 - (event.clientX - documentOffsetX / 4)) + "px"
+    divCircle.style.marginRight = -(10000 - documentOffsetX / 2) / 2 - (event.clientX - documentOffsetX / 4) + "px"
     divCircle.className = "circleDiv"
-
+    circle.addEventListener('animationend', () => {
+        divCircle.remove();
+    });
     divCircle.appendChild(circle)
     if (clickPos > 0.5) {
         divNext.prepend(divCircle)
@@ -358,22 +371,20 @@ async function propagationClick(event) {
     else {
         divPrev.prepend(divCircle)
     }
-    await sleep(50)
-    circle.style.width = "1000px"
-    circle.style.height = "1000px"
+
 }
 function nextVideo(event) {
     let time = Date.now() - lastClick;
     lastClick = Date.now()
     if (time < 500) {
-        nextTime = nextTime + Time
+        nextTime = nextTime + timeMov
         prevTime = 0
         document.getElementById("textNext").textContent = nextTime + " sec"
         document.getElementById("nextTime").style.opacity = "1"
         document.getElementById("previousTime").style.opacity = "0"
         nextAnimation()
         let video = document.querySelector("video")
-        let time = video.currentTime + Time
+        let time = video.currentTime + timeMov
         video.currentTime = time
         updatetimeCodeWithValue(time)
         propagationClick(event)
@@ -479,7 +490,7 @@ function optionSetting() {
         let timeElement = document.createElement("button")
         timeElement.value = time
         timeElement.textContent = time + " SECONDES"
-        if (time == Time) {
+        if (time == timeMov) {
             timeElement.style.background = "rgb(201, 201, 201, 0.20)"
         }
         timeElement.addEventListener("click", changeTimeDoubleTaps)
@@ -490,8 +501,8 @@ function optionSetting() {
 }
 
 function changeTimeDoubleTaps(event) {
-    Time = parseInt(event.srcElement.value)
-    localStorage.setItem("time", Time);
+    timeMov = parseInt(event.srcElement.value)
+    localStorage.setItem("time", timeMov);
 
     for (let element of document.querySelectorAll(".setting > button")) {
         element.style.background = "transparent"
@@ -566,6 +577,12 @@ function updatetimeCode() {
     let slider = document.getElementById("slider")
     let video = document.querySelector("video")
     let timeCode = document.getElementById("timeCode")
+    chrome.runtime.sendMessage({
+        from: isTop ? "top" : "iframe",
+        type: "time",
+        time: video.currentTime,
+        url : location.href
+    });
     if (timeCode != null)
         timeCode.textContent = getTime(video.currentTime) + "/" + getTime(video.duration)
     if (barProgress != null)
@@ -630,7 +647,7 @@ function playPauseShow() {
 function getTime(seconds) {
     let time = parseInt(seconds)
     let res = ""
-    if (time > 60) {
+    if (time >= 60) {
         if (time % 60 < 10)
             res = ":0" + time % 60
         else
@@ -642,7 +659,7 @@ function getTime(seconds) {
         else
             return "0:" + time % 60
     }
-    if (time > 3600) {
+    if (time >= 3600) {
         if ((time - time % 60) / 60 % 60 < 10)
             res = ":0" + (time - time % 60) / 60 % 60 + res
         else
@@ -667,10 +684,6 @@ function playPause() {
     }
 
 }
-
-
-
-main()
 
 
 
