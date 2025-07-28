@@ -55,6 +55,10 @@ else {
 function getTime(seconds) {
     let time = parseInt(seconds)
     let res = ""
+    console.log(seconds)
+    if (seconds == null) {
+        return "0:00"
+    }
     if (time >= 60) {
         if (time % 60 < 10)
             res = ":0" + time % 60
