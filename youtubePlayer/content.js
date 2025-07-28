@@ -175,7 +175,7 @@ function updateOpacity() {
 function playAuto(play) {
     try {
         let playButton;
-        if (location.href.includes("https://vidmoly.to") || location.href.includes("ref=v6.voiranime.com") )
+        if (location.href.includes("https://vidmoly.") || location.href.includes("ref=v6.voiranime.com") )
             playButton = document.querySelector(".jw-icon-display")
         if (location.href.includes("https://dooodster.com"))
             playButton = document.querySelector(".vjs-big-play-button")
@@ -193,7 +193,7 @@ function playAuto(play) {
 }
 
 function setWidth() {
-    if (location.href.includes("ref=v6.voiranime.com") || location.href.includes("https://vidmoly.to"))
+    if (location.href.includes("ref=v6.voiranime.com") || location.href.includes("https://vidmoly."))
         document.querySelector(".controls").style.height = "95%"
 }
 
