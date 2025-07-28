@@ -1,12 +1,15 @@
 
 if (document.querySelectorAll(".profile-manga") != null && document.querySelectorAll(".profile-manga").length > 0) {
-    let title = document.querySelector(".post-title > h1").textContent.replaceAll("\t", "").replaceAll("\n", "")
+    let title = document.querySelector(".post-title > h1").textContent.replaceAll("\t", "").replaceAll("\n", "").replaceAll("’","'")
     title = title.split(" ").slice(0, title.split(" ").indexOf("")).join(" ")
     for (var element of document.querySelectorAll(".version-chap > li ")) {
         let ep = element.querySelector("a").textContent.split(" - ")[1].split(" ")[0]
         let time = localStorage.getItem(title + "/" + ep)
+        console.log(title + "/" + ep)
+        element.querySelector("a").style.marginRight = "80px"
+        element.querySelector("span").style.textAlign = "center"
         if (time != null)
-            element.querySelector("a").textContent += " - " + getTime(time)
+            element.querySelector("span").innerHTML += "<br>Time : " + getTime(time)
     }
 }
 else {
@@ -14,7 +17,6 @@ else {
     selectHost.addEventListener("change", () => {
         console.log(selectHost.value)
         localStorage.setItem("Player", selectHost.value);
-
     })
     selectHost.value = localStorage.getItem("Player");
     let title = document.querySelectorAll(".breadcrumb a")[1].textContent.replaceAll("\t", "").replaceAll("\n", "")
@@ -24,20 +26,23 @@ else {
     if (time == null) {
         time == 0
     }
+    let div = document.createElement("div")
+    div.innerHTML = "<p id='timeCode'>" + getTime(time)+"</p>"
+    document.querySelector(".select-view").appendChild(div)
     const isTop = window === window.top;
-
     chrome.runtime.onMessage.addListener((msg) => {
         if (msg.relay && msg.payload.from !== "top" && document.querySelectorAll('iframe[src="' + msg.payload.url +'"]').length > 0) {
             if (msg.payload.type == "data") {
                 chrome.runtime.sendMessage({
                     from: isTop ? "top" : "iframe",
-                    type: "title",
+                    type: "init",
                     title: title,
                     ep: ep,
                     time: time
                 });
             }
             if (msg.payload.type == "time") {
+                document.getElementById("timeCode").textContent = getTime(msg.payload.time)
                 localStorage.setItem(title + "/" + ep, msg.payload.time)
             }
             console.log('Recu page :', msg.payload);

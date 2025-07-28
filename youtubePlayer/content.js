@@ -3,14 +3,11 @@ var lastClick = Date.now()
 var lastClickGlobal = Date.now()
 let prevTime = 0
 let nextTime = 0
-let timeInit = 0
 let timeMov = 10
 let isFullScreen = false
 let play = false
 let changePLayer = false
 let doubleTaps = [1, 2, 3, 5, 10, 15, 20]
-let title = "";
-let ep = "";
 // Svg Icon
 let svgFullscreenOn = '<svg width="36px" height="36px"  viewBox="0 0 36 36" fill="white"><path d="m 7,16 v -8 h 8 v 1 h -7 v 7"></path><path d="m 19,8 h 8 v 8 h -1 v -7 h -7"></path><path d="m 7,20 v 8 h 8 v -1 h -7 v -7" ></path><path d="m 19,28 h 8 v -8 h -1 v 7 h -7" ></path></svg>'
 let svgFullscreenOff = '<svg width="36px" height="36px  " viewBox="0 0 36 36" fill="white"><path d="m 7,15 h 7 v -7 h -1 v 6 h -6" ></path><path d="m 21,8 v 7 h 7 v -1 h -6 v -6" ></path><path d="m 7,22 h 7 v 7 h -1 v -6 h -6"></path><path d="m 21,29 v -7 h 7 v 1 h -6 v 6"></path></svg>'
@@ -26,16 +23,16 @@ const isTop = window === window.top;
 chrome.runtime.sendMessage({
     from: isTop ? "top" : "iframe",
     type: "data",
-    url : location.href
+    url: window.location.origin + window.location.pathname
 });
 
 chrome.runtime.onMessage.addListener((msg) => {
-    if (msg.relay && msg.payload.from !== "iframe") {
+    if (msg.payload.from !== "iframe") {
         console.log('Recu iframe :', msg.payload);
-        if (msg.payload.type == "title") {
-            title= msg.payload.title
-            ep = msg.payload.ep
-            timeInit = msg.payload.time
+        if (msg.payload.type == "init") {
+            localStorage.setItem("title", msg.payload.title);
+            localStorage.setItem("ep", msg.payload.ep);
+            localStorage.setItem("timeInit", msg.payload.time);
         }
     }
 });
@@ -113,8 +110,6 @@ function hide(elementHtml) {
 
 async function Player() {
     try {
-        if (!play)
-            play = playAuto(play)
         if (!changePLayer || document.getElementsByClassName("controls").length == 0) {
             document.querySelector("html").style.pointerEvents = "none"
             hideAll(document.querySelector("body"))
@@ -124,8 +119,6 @@ async function Player() {
                 controls.innerHTML = ""
                 controls.className = "controls"
                 controls.appendChild(createPlayer())
-                document.querySelector("video").addEventListener("loadeddata", () => { document.querySelector("video").currentTime = timeInit })
-            //    setWidth()
             }
             changePLayer = true
         }
@@ -175,16 +168,19 @@ function updateOpacity() {
 function playAuto(play) {
     try {
         let playButton;
-        if (location.href.includes("https://vidmoly.") || location.href.includes("ref=v6.voiranime.com") )
+        if (location.href.includes("https://vidmoly.") || location.href.includes("ref=v6.voiranime.com"))
             playButton = document.querySelector(".jw-icon-display")
         if (location.href.includes("https://dooodster.com"))
             playButton = document.querySelector(".vjs-big-play-button")
         if (location.href.includes("https://jilliandescribecompany.com"))
             playButton = document.querySelector(".icon")
-        if (playButton != null && !play) {
+        if (location.href.includes("https://streamtape.com"))
+            playButton = document.querySelectorAll("button[aria-label='Play']")[1]
+        if (playButton != null) {
             playButton.click()
-            return true
         }
+        //document.querySelector("video").play()
+        return !document.querySelector("video").paused
     }
     catch (ex) {
         console.error(ex)
@@ -224,11 +220,22 @@ async function main() {
         updateOpacity()
         await sleep(50)
     }
+    while (!play) {
+        playAutoAsync()
+    }
+    let initTime = localStorage.getItem("timeInit")
+    let video = document.querySelector("video")
+    while (video.currentTime != initTime)
+        video.currentTime = initTime
     while (true) {
         hideAll(document.querySelector("body"))
         updateOpacity()
         await sleep(50)
     }
+}
+async function playAutoAsync() {
+    if (!play)
+        play = playAuto(play)
 }
 
 function createPlayer() {
@@ -581,7 +588,7 @@ function updatetimeCode() {
         from: isTop ? "top" : "iframe",
         type: "time",
         time: video.currentTime,
-        url : location.href
+        url: window.location.origin + window.location.pathname,
     });
     if (timeCode != null)
         timeCode.textContent = getTime(video.currentTime) + "/" + getTime(video.duration)
