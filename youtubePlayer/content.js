@@ -19,23 +19,27 @@ let svgPause = '<svg style="margin-left:-3px" width="48px" height="48px" viewBox
 let svgPlay = '<svg style="margin-left:-4px" width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 16,26 16,10 12,10 z M 21,26 25,26 25,10 21,10 z"></path></svg>'
 let svgSkipOp = '<svg width="48px" height="48px" viewBox="0 0 36 36"><style>.small {font: 10px roboto;}</style><path  d="M 30 10 L 33 16  L 26.7 17 " fill="white"></path><path d="M 3 15 Q 15 7 29 14 " stroke="white" fill="transparent"></path><text x="6" y="24" class="small" fill="white">1:30</text></svg>'
 
-const isTop = window === window.top;
-chrome.runtime.sendMessage({
-    from: isTop ? "top" : "iframe",
-    type: "data",
-    url: window.location.origin + window.location.pathname
-});
+try {
+    const isTop = window === window.top;
+    chrome.runtime.sendMessage({
+        from: "iframe",
+        type: "data",
+        url: window.location.origin + window.location.pathname
+    });
 
-chrome.runtime.onMessage.addListener((msg) => {
-    if (msg.payload.from !== "iframe") {
-        console.log('Recu iframe :', msg.payload);
-        if (msg.payload.type == "init") {
-            localStorage.setItem("title", msg.payload.title);
-            localStorage.setItem("ep", msg.payload.ep);
-            localStorage.setItem("timeInit", msg.payload.time);
+    chrome.runtime.onMessage.addListener((msg) => {
+        if (msg.payload.from !== "iframe") {
+            console.log('Recu iframe :', msg.payload);
+            if (msg.payload.type == "init") {
+                localStorage.setItem("title", msg.payload.title);
+                localStorage.setItem("ep", msg.payload.ep);
+                localStorage.setItem("timeInit", msg.payload.time);
+            }
         }
-    }
-});
+    });
+}
+catch {}
+
 main()
 
 
@@ -179,7 +183,11 @@ function playAuto(play) {
         if (playButton != null) {
             playButton.click()
         }
-        //document.querySelector("video").play()
+        console.log(playButton)
+        try {
+            document.querySelector("video").play()
+        }
+        catch { }
         return !document.querySelector("video").paused
     }
     catch (ex) {
@@ -220,22 +228,27 @@ async function main() {
         updateOpacity()
         await sleep(50)
     }
-    while (!play) {
-        playAutoAsync()
+    let count = 0
+    while (!play && count < 20) {
+        count += 1 
+        if (!play)
+            play = playAuto(play)
+        await sleep(50)
     }
     let initTime = localStorage.getItem("timeInit")
     let video = document.querySelector("video")
-    while (video.currentTime != initTime)
-        video.currentTime = initTime
+    count = 0
+    if (initTime != "null")
+        while (video.currentTime != initTime && count < 20) {
+            count += 1 
+            video.currentTime = initTime
+            await sleep(50)
+        }
     while (true) {
         hideAll(document.querySelector("body"))
         updateOpacity()
         await sleep(50)
     }
-}
-async function playAutoAsync() {
-    if (!play)
-        play = playAuto(play)
 }
 
 function createPlayer() {
@@ -584,12 +597,15 @@ function updatetimeCode() {
     let slider = document.getElementById("slider")
     let video = document.querySelector("video")
     let timeCode = document.getElementById("timeCode")
-    chrome.runtime.sendMessage({
-        from: isTop ? "top" : "iframe",
-        type: "time",
-        time: video.currentTime,
-        url: window.location.origin + window.location.pathname,
-    });
+    try {
+        chrome.runtime.sendMessage({
+            from: "iframe",
+            type: "time",
+            time: video.currentTime,
+            url: window.location.origin + window.location.pathname,
+        });
+    }
+    catch { }
     if (timeCode != null)
         timeCode.textContent = getTime(video.currentTime) + "/" + getTime(video.duration)
     if (barProgress != null)

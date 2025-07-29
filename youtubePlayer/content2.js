@@ -34,7 +34,7 @@ else {
         if (msg.relay && msg.payload.from !== "top" && document.querySelectorAll('iframe[src="' + msg.payload.url +'"]').length > 0) {
             if (msg.payload.type == "data") {
                 chrome.runtime.sendMessage({
-                    from: isTop ? "top" : "iframe",
+                    from:"top",
                     type: "init",
                     title: title,
                     ep: ep,
