@@ -229,17 +229,19 @@ function removeEvent() {
 
 async function main() {
     let initTime = localStorage.getItem("timeInit")
+    let count = 0
     if (initTime != "null")
         initActivated == false
     let video = document.querySelector("video")
     while (true) {
+        count++
         if (document.querySelector("video") != null && !changePLayer && document.getElementsByClassName("controls").length == 0)
             Player()
 
         if (!play)
             play = playAuto(play)
 
-        if (!initActivated && !play) {
+        if (count < 2000 && video.currentTime < initTime) {
             video.currentTime = initTime
             if (video.currentTime == initTime)
                 initActivated = true
