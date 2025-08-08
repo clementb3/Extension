@@ -1,6 +1,6 @@
 
 if (document.querySelectorAll(".profile-manga") != null && document.querySelectorAll(".profile-manga").length > 0) {
-    let title = document.querySelector(".post-title > h1").textContent.replaceAll("\t", "").replaceAll("\n", "").replaceAll("’","'")
+    let title = document.querySelector(".post-title > h1").textContent.replaceAll("\t", "").replaceAll("\n", "").replaceAll("’", "'")
     title = title.split(" ").slice(0, title.split(" ").indexOf("")).join(" ")
     for (var element of document.querySelectorAll(".version-chap > li ")) {
         let ep = element.querySelector("a").textContent.split(" - ")[1].split(" ")[0]
@@ -24,31 +24,46 @@ else {
     let ep = document.querySelectorAll(".selectpicker_chapter select option")[document.querySelector(".selectpicker_chapter select").selectedIndex].textContent
     let time = localStorage.getItem(title + "/" + ep)
     if (time == null) {
-        time == 0
+        time =   0
+    }
+    let timeAdd = localStorage.getItem("timeAdd")
+    if (timeAdd == null) {
+        timeAdd = 10
     }
     let div = document.createElement("div")
-    div.innerHTML = "<p id='timeCode'>" + getTime(time)+"</p>"
+    div.innerHTML = "<p id='timeCode'>" + getTime(time) + "</p>"
     document.querySelector(".select-view").appendChild(div)
-    const isTop = window === window.top;
     chrome.runtime.onMessage.addListener((msg) => {
-        if (msg.relay && msg.payload.from !== "top" && document.querySelectorAll('iframe[src="' + msg.payload.url +'"]').length > 0) {
-            if (msg.payload.type == "data") {
+        if (msg.relay && msg.payload.from !== "top") {
+            console.log('Recu page :', msg.payload);
+            if (document.querySelectorAll('iframe[src="' + msg.payload.url + '"]').length > 0) {
+                if (msg.payload.type == "data") {
+                    chrome.runtime.sendMessage({
+                        from: "top",
+                        type: "init",
+                        title: title,
+                        ep: ep,
+                        time: time,
+                        timeAdd: timeAdd,
+                        origin: "voiranime"
+                    });
+                }
+                if (msg.payload.type == "time" && parseInt(msg.payload.time)>0) {
+                    document.getElementById("timeCode").textContent = getTime(msg.payload.time)
+                    localStorage.setItem(title + "/" + ep, msg.payload.time)
+                }
+            }
+            if (msg.payload.url == "all" && msg.payload.type == "timeAdd") {
+                localStorage.setItem("timeAdd", msg.payload.time);
+
                 chrome.runtime.sendMessage({
-                    from:"top",
-                    type: "init",
-                    title: title,
-                    ep: ep,
-                    time: time
+                    from: "top",
+                    type: "timeAdd",
+                    time: msg.payload.time
                 });
             }
-            if (msg.payload.type == "time") {
-                document.getElementById("timeCode").textContent = getTime(msg.payload.time)
-                localStorage.setItem(title + "/" + ep, msg.payload.time)
-            }
-            console.log('Recu page :', msg.payload);
         }
     });
-
 }
 
 
@@ -56,7 +71,7 @@ function getTime(seconds) {
     let time = parseInt(seconds)
     let res = ""
     console.log(seconds)
-    if (seconds == null) {
+    if (seconds == null || seconds == 0) {
         return "0:00"
     }
     if (time >= 60) {

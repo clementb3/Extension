@@ -7,6 +7,7 @@ let timeMov = 10
 let isFullScreen = false
 let play = false
 let changePLayer = false
+let initActivated = true
 let doubleTaps = [1, 2, 3, 5, 10, 15, 20]
 // Svg Icon
 let svgFullscreenOn = '<svg width="36px" height="36px"  viewBox="0 0 36 36" fill="white"><path d="m 7,16 v -8 h 8 v 1 h -7 v 7"></path><path d="m 19,8 h 8 v 8 h -1 v -7 h -7"></path><path d="m 7,20 v 8 h 8 v -1 h -7 v -7" ></path><path d="m 19,28 h 8 v -8 h -1 v 7 h -7" ></path></svg>'
@@ -20,7 +21,7 @@ let svgPlay = '<svg style="margin-left:-4px" width="48px" height="48px" viewBox=
 let svgSkipOp = '<svg width="48px" height="48px" viewBox="0 0 36 36"><style>.small {font: 10px roboto;}</style><path  d="M 30 10 L 33 16  L 26.7 17 " fill="white"></path><path d="M 3 15 Q 15 7 29 14 " stroke="white" fill="transparent"></path><text x="6" y="24" class="small" fill="white">1:30</text></svg>'
 
 try {
-    const isTop = window === window.top;
+    console.log(window.location.origin + window.location.pathname)
     chrome.runtime.sendMessage({
         from: "iframe",
         type: "data",
@@ -34,13 +35,18 @@ try {
                 localStorage.setItem("title", msg.payload.title);
                 localStorage.setItem("ep", msg.payload.ep);
                 localStorage.setItem("timeInit", msg.payload.time);
+                localStorage.setItem("timeMov", msg.payload.timeAdd);
+                localStorage.setItem("origin", msg.payload.origin);
+                main()
+            }
+            if (msg.payload.type == "timeAdd") {
+                localStorage.setItem("timeMov", msg.payload.time);
             }
         }
     });
 }
-catch {}
+catch { }
 
-main()
 
 
 
@@ -183,15 +189,16 @@ function playAuto(play) {
         if (playButton != null) {
             playButton.click()
         }
-        console.log(playButton)
         try {
             document.querySelector("video").play()
         }
-        catch { }
+        catch (ex) {
+            //console.error(ex)
+        }
         return !document.querySelector("video").paused
     }
     catch (ex) {
-        console.error(ex)
+        //console.error(ex)
     }
     return false
 }
@@ -221,32 +228,27 @@ function removeEvent() {
 }
 
 async function main() {
-    while (!changePLayer || document.getElementsByClassName("controls").length == 0) {
-        if (document.querySelector("video") != null)
+    let initTime = localStorage.getItem("timeInit")
+    if (initTime != "null")
+        initActivated == false
+    let video = document.querySelector("video")
+    while (true) {
+        if (document.querySelector("video") != null && !changePLayer && document.getElementsByClassName("controls").length == 0)
             Player()
-        hideAll(document.querySelector("body"))
-        updateOpacity()
-        await sleep(50)
-    }
-    let count = 0
-    while (!play && count < 20) {
-        count += 1 
+
         if (!play)
             play = playAuto(play)
-        await sleep(50)
-    }
-    let initTime = localStorage.getItem("timeInit")
-    let video = document.querySelector("video")
-    count = 0
-    if (initTime != "null")
-        while (video.currentTime != initTime && count < 20) {
-            count += 1 
+
+        if (!initActivated && !play) {
             video.currentTime = initTime
-            await sleep(50)
+            if (video.currentTime == initTime)
+                initActivated = true
         }
-    while (true) {
         hideAll(document.querySelector("body"))
         updateOpacity()
+        if (timeMov != parseInt(localStorage.getItem("timeMov"))) {
+            timeMov = parseInt(localStorage.getItem("timeMov"))
+        }
         await sleep(50)
     }
 }
@@ -522,8 +524,15 @@ function optionSetting() {
 
 function changeTimeDoubleTaps(event) {
     timeMov = parseInt(event.srcElement.value)
-    localStorage.setItem("time", timeMov);
-
+    try {
+        chrome.runtime.sendMessage({
+            from: "iframe",
+            type: "timeAdd",
+            time: timeMov,
+            url: "all",
+        });
+    }
+    catch { }
     for (let element of document.querySelectorAll(".setting > button")) {
         element.style.background = "transparent"
     }
@@ -574,9 +583,10 @@ function createButtonLeft() {
     skipOp.id = "skipOp"
     skipOp.innerHTML = svgSkipOp
     skipOp.addEventListener("click", skip)
-    if (!location.href.includes("https://dooodster.com"))
+    console.log(localStorage.getItem("origin"))
+    if (localStorage.getItem("origin") != "flemmix") {
         buttonsLeft.appendChild(skipOp)
-    //buttonsLeft.appendChild(volume)
+    }
     let timeCode = document.createElement("p")
     timeCode.id = "timeCode"
     timeCode.className = "timeCode"
@@ -597,15 +607,16 @@ function updatetimeCode() {
     let slider = document.getElementById("slider")
     let video = document.querySelector("video")
     let timeCode = document.getElementById("timeCode")
-    try {
-        chrome.runtime.sendMessage({
-            from: "iframe",
-            type: "time",
-            time: video.currentTime,
-            url: window.location.origin + window.location.pathname,
-        });
-    }
-    catch { }
+    if (initActivated)
+        try {
+            chrome.runtime.sendMessage({
+                from: "iframe",
+                type: "time",
+                time: video.currentTime,
+                url: window.location.origin + window.location.pathname,
+            });
+        }
+        catch { }
     if (timeCode != null)
         timeCode.textContent = getTime(video.currentTime) + "/" + getTime(video.duration)
     if (barProgress != null)
@@ -670,6 +681,9 @@ function playPauseShow() {
 function getTime(seconds) {
     let time = parseInt(seconds)
     let res = ""
+    if (seconds == null || seconds == 0) {
+        return "0:00"
+    }
     if (time >= 60) {
         if (time % 60 < 10)
             res = ":0" + time % 60
