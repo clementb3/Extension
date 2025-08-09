@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Youtube style player",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "permissions": [
     "storage",
     "notifications",
@@ -32,7 +32,14 @@
         "https://my.mail.ru/*",
         "https://dooodster.com/*",
         "https://jilliandescribecompany.com/*",
-        "https://streamtape.com/*"
+        "https://streamtape.com/*",
+        "https://oneupload.net/*",
+        "https://d-s.io/*",
+        "https://luluvid.com/*",
+        "https://uqload.cx/*",
+        "https://mivalyo.com/*",
+        "https://hglink.to/*",
+        "https://ups2up.fun/*"
       ],
       "all_frames": true,
       "run_at": "document_idle",

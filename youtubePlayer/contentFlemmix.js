@@ -18,6 +18,27 @@ if (location.origin.includes("flemmix")) {
     chrome.runtime.onMessage.addListener((msg) => {
         if (msg.relay && msg.payload.from !== "top") {
             console.log('Recu page :', msg.payload);
+            if (msg.payload.url.includes("https://oneupload.")) {
+                for (let iframe of document.querySelectorAll("iframe")) {
+                    if (iframe.src.includes(msg.payload.url.split("-").at(-1).split(".")[0])) {
+                        if (msg.payload.type == "data") {
+                            chrome.runtime.sendMessage({
+                                from: "top",
+                                type: "init",
+                                title: title,
+                                ep: ep,
+                                time: time,
+                                timeAdd: timeAdd,
+                                origin: "flemmix"
+                            });
+                        }
+                        if (msg.payload.type == "time" && parseInt(msg.payload.time) > 0 && msg.payload.ep == ep) {
+                            document.getElementById("timeCode").textContent = getTime(msg.payload.time)
+                            localStorage.setItem(title + "/" + ep, msg.payload.time)
+                        }
+                    }
+                }
+            }
             if (document.querySelectorAll('iframe[src="' + msg.payload.url + '"]').length > 0) {
                 if (msg.payload.type == "data") {
                     chrome.runtime.sendMessage({
@@ -30,7 +51,7 @@ if (location.origin.includes("flemmix")) {
                         origin: "flemmix"
                     });
                 }
-                if (msg.payload.type == "time" && parseInt(msg.payload.time) > 0) {
+                if (msg.payload.type == "time" && parseInt(msg.payload.time) > 0 && msg.payload.ep == ep) {
                     document.getElementById("timeCode").textContent = getTime(msg.payload.time)
                     localStorage.setItem(title + "/" + ep, msg.payload.time)
                 }

@@ -178,13 +178,15 @@ function updateOpacity() {
 function playAuto(play) {
     try {
         let playButton;
-        if (location.href.includes("https://vidmoly.") || location.href.includes("ref=v6.voiranime.com"))
+        if (location.href.includes("https://vidmoly.") || location.href.includes("ref=v6.voiranime.com") || location.href.includes("https://ups2up.") || location.href.includes("https://oneupload.") || location.href.includes("https://luluvid.") || location.href.includes("https://mivalyo.") || location.href.includes("https://hglink."))
             playButton = document.querySelector(".jw-icon-display")
-        if (location.href.includes("https://dooodster.com"))
+        if (location.href.includes("https://uqload."))
+            playButton = document.querySelector(".play-wrapper")
+        if (location.href.includes("https://d-s."))
             playButton = document.querySelector(".vjs-big-play-button")
-        if (location.href.includes("https://jilliandescribecompany.com"))
+        if (location.href.includes("https://jilliandescribecompany."))
             playButton = document.querySelector(".icon")
-        if (location.href.includes("https://streamtape.com"))
+        if (location.href.includes("https://streamtape."))
             playButton = document.querySelectorAll("button[aria-label='Play']")[1]
         if (playButton != null) {
             playButton.click()
@@ -234,7 +236,6 @@ async function main() {
         initActivated == false
     let video = document.querySelector("video")
     while (true) {
-        count++
         video = document.querySelector("video")
         if (document.querySelector("video") != null && !changePLayer && document.getElementsByClassName("controls").length == 0)
             Player()
@@ -242,9 +243,12 @@ async function main() {
         if (!play)
             play = playAuto(play)
 
-        if (video != null && count < 2000 && video.currentTime < initTime) {
+        if (video != null && count < 2 && video.currentTime < initTime) {
+            if (video.currentTime > 0)
+                count++
+
             video.currentTime = initTime
-            if (video.currentTime == initTime)
+            if (video.currentTime > initTime)
                 initActivated = true
         }
         hideAll(document.querySelector("body"))
@@ -617,6 +621,7 @@ function updatetimeCode() {
                 type: "time",
                 time: video.currentTime,
                 url: window.location.origin + window.location.pathname,
+                ep: localStorage.getItem("ep")
             });
         }
         catch { }
