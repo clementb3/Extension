@@ -92,10 +92,10 @@ function hideAll(elementHtml) {
 }
 
 function hide(elementHtml) {
-    if (document.querySelector("video" == null))
+    if (document.querySelector("video" == null)) {
         return true;
-    if (elementHtml.className == "controls" || elementHtml.className == "setting") {
-
+    }
+    if (elementHtml.className == "controls" || elementHtml.className == "setting" || elementHtml.nodeName == "VIDEO") {
         elementHtml.style.visibility = 'visible'
         return true
     }
@@ -111,7 +111,7 @@ function hide(elementHtml) {
         return false
     }
     for (let element of elementChild) {
-        hideAll(element)
+        hide(element)
     }
     elementHtml.style.pointerEvents = 'none'
     elementHtml.style.visibility = 'hidden'
