@@ -8,6 +8,7 @@ let isFullScreen = false
 let play = false
 let changePLayer = false
 let initActivated = true
+let clientWidth = 0
 let doubleTaps = [1, 2, 3, 5, 10, 15, 20]
 // Svg Icon
 let svgFullscreenOn = '<svg width="36px" height="36px"  viewBox="0 0 36 36" fill="white"><path d="m 7,16 v -8 h 8 v 1 h -7 v 7"></path><path d="m 19,8 h 8 v 8 h -1 v -7 h -7"></path><path d="m 7,20 v 8 h 8 v -1 h -7 v -7" ></path><path d="m 19,28 h 8 v -8 h -1 v 7 h -7" ></path></svg>'
@@ -50,9 +51,6 @@ catch { }
 
 
 
-document.addEventListener('fullscreenchange', () => {
-    isFullScreen = !isFullScreen
-});
 
 document.addEventListener("keydown", function (event) {
     if (event.key == "ArrowRight") {
@@ -237,6 +235,9 @@ async function main() {
     let video = document.querySelector("video")
     while (true) {
         video = document.querySelector("video")
+        if (document.querySelector("video") != null && clientWidth==0) {
+            clientWidth = document.querySelector('video').clientWidth
+        }
         if (document.querySelector("video") != null && !changePLayer && document.getElementsByClassName("controls").length == 0)
             Player()
 
@@ -262,14 +263,6 @@ async function main() {
 
 function createPlayer() {
     document.querySelector(".controls").addEventListener("click", clickPlayer)
-    document.querySelector("html").addEventListener("fullscreenchange", function (e) {
-        if (isFullScreen) {
-            fullScreen.innerHTML = svgFullscreenOn
-        }
-        else {
-            fullScreen.innerHTML = svgFullscreenOff
-        }
-    });
     document.querySelector(".controls").addEventListener("mousemove", function () { lastClickGlobal = Date.now() })
     let div = document.createElement("div")
 
@@ -547,6 +540,13 @@ function changeTimeDoubleTaps(event) {
 }
 
 function fullScreenAction() {
+    isFullScreen = clientWidth < document.querySelector('video').clientWidth
+    if (isFullScreen) {
+        fullScreen.innerHTML = svgFullscreenOn
+    }
+    else {
+        fullScreen.innerHTML = svgFullscreenOff
+    }
     if (isFullScreen)
         document.exitFullscreen()
     else
