@@ -120,6 +120,7 @@ async function Player() {
     try {
         if (!changePLayer || document.getElementsByClassName("controls").length == 0) {
             document.querySelector("html").style.pointerEvents = "none"
+            document.querySelector("html").addEventListener("fullscreenchange", changeFullscreenIcon)
             hideAll(document.querySelector("body"))
             let controls = document.createElement("div")
             document.querySelector("body").appendChild(controls)
@@ -235,7 +236,7 @@ async function main() {
     let video = document.querySelector("video")
     while (true) {
         video = document.querySelector("video")
-        if (document.querySelector("video") != null && clientWidth==0) {
+        if (document.querySelector("video") != null && clientWidth == 0) {
             clientWidth = document.querySelector('video').clientWidth
         }
         if (document.querySelector("video") != null && !changePLayer && document.getElementsByClassName("controls").length == 0)
@@ -541,17 +542,22 @@ function changeTimeDoubleTaps(event) {
 
 function fullScreenAction() {
     isFullScreen = clientWidth < document.querySelector('video').clientWidth
-    if (isFullScreen) {
-        fullScreen.innerHTML = svgFullscreenOn
-    }
-    else {
-        fullScreen.innerHTML = svgFullscreenOff
-    }
+    changeFullscreenIcon()
     if (isFullScreen)
         document.exitFullscreen()
     else
         document.querySelector("html").requestFullscreen()
     document.querySelector("#playPause").focus()
+}
+
+async function changeFullscreenIcon() {
+    await sleep(200)
+    if (clientWidth >= document.querySelector('video').clientWidth) {
+        fullScreen.innerHTML = svgFullscreenOn
+    }
+    else {
+        fullScreen.innerHTML = svgFullscreenOff
+    }
 }
 
 function createButtonLeft() {
