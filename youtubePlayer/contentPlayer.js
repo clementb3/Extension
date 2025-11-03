@@ -1,6 +1,6 @@
-var mouseDown = false
-var lastClick = Date.now()
-var lastClickGlobal = Date.now()
+let mouseDown = false
+let lastClick = Date.now()
+let lastClickGlobal = Date.now()
 let prevTime = 0
 let nextTime = 0
 let timeMov = 10
@@ -22,11 +22,11 @@ let svgPlay = '<svg style="margin-left:-4px" width="48px" height="48px" viewBox=
 let svgSkipOp = '<svg width="48px" height="48px" viewBox="0 0 36 36"><style>.small {font: 10px roboto;}</style><path  d="M 30 10 L 33 16  L 26.7 17 " fill="white"></path><path d="M 3 15 Q 15 7 29 14 " stroke="white" fill="transparent"></path><text x="6" y="24" class="small" fill="white">1:30</text></svg>'
 
 try {
-    console.log(window.location.origin + window.location.pathname)
+    console.log(globalThis.location.origin + globalThis.location.pathname)
     chrome.runtime.sendMessage({
         from: "iframe",
         type: "data",
-        url: window.location.origin + window.location.pathname
+        url: globalThis.location.origin + globalThis.location.pathname
     });
 
     chrome.runtime.onMessage.addListener((msg) => {
@@ -129,11 +129,19 @@ async function Player() {
                 controls.className = "controls"
                 controls.appendChild(createPlayer())
             }
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden' && document.visibilityState === "blur") {
+                    try {
+                        document.querySelector("video").requestPictureInPicture()
+                    }
+                    catch { }
+                }
+            });
             changePLayer = true
         }
         let overlay = document.getElementsByClassName("custom-overlay")[0]
         if (overlay != null) {
-            document.querySelector("body").removeChild(overlay)
+            overlay.remove();
         }
     }
     catch (ex) {
@@ -193,14 +201,10 @@ function playAuto(play) {
         try {
             document.querySelector("video").play()
         }
-        catch (ex) {
-            //console.error(ex)
-        }
+        catch { }
         return !document.querySelector("video").paused
     }
-    catch (ex) {
-        //console.error(ex)
-    }
+    catch { }
     return false
 }
 
@@ -213,7 +217,7 @@ function removeEvent() {
     try {
         document.body.removeEventListener('click', getEventListeners(document.body).click[0].listener)
         document.body.removeEventListener('touchend', getEventListeners(document.body).touchend[0].listener)
-        for (var i = 0; i < 4; i++) {
+        for (let i = 0; i < 4; i++) {
             document.body.removeEventListener('touchmove', getEventListeners(document.body).touchmove[i].listener)
             document.body.removeEventListener('touchstart', getEventListeners(document.body).touchstart[i].listener)
 
@@ -232,9 +236,9 @@ async function main() {
     let initTime = localStorage.getItem("timeInit")
     let count = 0
     if (initTime != "null")
-        initActivated == false
+        initActivated = false
     let video = document.querySelector("video")
-    while (true) {
+setInterval(() => {
         video = document.querySelector("video")
         if (document.querySelector("video") != null && clientWidth == 0) {
             clientWidth = document.querySelector('video').clientWidth
@@ -255,11 +259,10 @@ async function main() {
         }
         hideAll(document.querySelector("body"))
         updateOpacity()
-        if (timeMov != parseInt(localStorage.getItem("timeMov"))) {
-            timeMov = parseInt(localStorage.getItem("timeMov"))
+        if (timeMov != Number.parseInt(localStorage.getItem("timeMov"))) {
+            timeMov = Number.parseInt(localStorage.getItem("timeMov"))
         }
-        await sleep(50)
-    }
+    }, 50)
 }
 
 function createPlayer() {
@@ -332,7 +335,7 @@ function clickPlayer(event) {
     let setting = document.querySelector(".setting")
     if (setting != null) {
         if (event.clientX < document.querySelector("html").offsetWidth - 170 || event.clientX > document.querySelector("html").offsetWidth - 10) {
-            document.querySelector("body").removeChild(setting)
+            setting.remove()
         }
     }
 
@@ -374,10 +377,12 @@ async function propagationClick(event) {
     let divPrev = document.getElementById("previousTime")
     let divNext = document.getElementById("nextTime")
     let circle = document.createElement("div")
-    if (divNext.querySelector(".circleDiv") != null)
-        divNext.removeChild(divNext.querySelector(".circleDiv"))
-    if (divPrev.querySelector(".circleDiv") != null)
-        divPrev.removeChild(divPrev.querySelector(".circleDiv"))
+    const circleDivNext = divNext.querySelector(".circleDiv")
+    if (circleDivNext != null)
+        circleDivNext.remove()
+    const circleDibPrev = divPrev.querySelector(".circleDiv")
+    if (circleDibPrev != null)
+        circleDibPrev.remove()
     circle.className = "circle"
     let divCircle = document.createElement("div")
     divCircle.style.marginTop = -(10000 - documentOffsetY) / 2 + (event.clientY - documentOffsetY / 2) + "px"
@@ -524,7 +529,7 @@ function optionSetting() {
 }
 
 function changeTimeDoubleTaps(event) {
-    timeMov = parseInt(event.srcElement.value)
+    timeMov = Number.parseInt(event.srcElement.value)
     try {
         chrome.runtime.sendMessage({
             from: "iframe",
@@ -573,7 +578,6 @@ function createButtonLeft() {
     play.setAttribute("status", "play")
     play.id = "playPause"
     play.addEventListener("click", playPause)
-    let volume = document.createElement("button")
     if (video.paused) {
         play.innerHTML = svgPause
     }
@@ -626,7 +630,7 @@ function updatetimeCode() {
                 from: "iframe",
                 type: "time",
                 time: video.currentTime,
-                url: window.location.origin + window.location.pathname,
+                url: globalThis.location.origin + globalThis.location.pathname,
                 ep: localStorage.getItem("ep")
             });
         }
@@ -640,7 +644,8 @@ function updatetimeCode() {
 }
 
 function updatetimeCodeWithValue(currentTime) {
-
+    if (currentTime < 0)
+        currentTime = 0
     let barProgress = document.getElementById("barProgress")
     let slider = document.getElementById("slider")
     let video = document.querySelector("video")
@@ -685,17 +690,15 @@ function playPauseShow() {
     if (video.paused && play != null) {
         play.innerHTML = svgPause
     }
-    else {
-        if (play != null) {
+    else if (play != null) {
             play.innerHTML = svgPlay
         }
-    }
 }
 
 function getTime(seconds) {
-    let time = parseInt(seconds)
+    let time = Number.parseInt(seconds)
     let res = ""
-    if (seconds == null || seconds == 0) {
+    if (seconds == null || seconds <= 0) {
         return "0:00"
     }
     if (time >= 60) {
@@ -704,12 +707,10 @@ function getTime(seconds) {
         else
             res = ":" + time % 60
     }
-    else {
-        if (time % 60 < 10)
+    else if (time % 60 < 10)
             return "0:0" + time % 60
         else
             return "0:" + time % 60
-    }
     if (time >= 3600) {
         if ((time - time % 60) / 60 % 60 < 10)
             res = ":0" + (time - time % 60) / 60 % 60 + res
@@ -734,30 +735,5 @@ function playPause() {
         video.pause()
     }
 
-}
-
-
-
-
-
-
-
-function captcha() {
-    //console.log(document.querySelector('html'))
-    //console.log(location.href)
-    if (location.href.includes("www.google.com/recaptcha") && !solved) {
-        let anchor = document.getElementById("recaptcha-anchor")
-        console.log(anchor)
-        console.log(document.querySelector("html"))
-
-        if (anchor != null && !anchorClick) {
-            anchor.click()
-            anchorClick = true
-        }
-
-        //document.getElementById("solver-button").click()
-        //solved == true
-        //console.log("solved")
-    }
 }
 

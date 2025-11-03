@@ -32,7 +32,7 @@ if (location.origin.includes("flemmix")) {
                                 origin: "flemmix"
                             });
                         }
-                        if (msg.payload.type == "time" && parseInt(msg.payload.time) > 0 && msg.payload.ep == ep) {
+                        if (msg.payload.type == "time" && Number.parseInt(msg.payload.time) > 0 && msg.payload.ep == ep) {
                             document.getElementById("timeCode").textContent = getTime(msg.payload.time)
                             localStorage.setItem(title + "/" + ep, msg.payload.time)
                         }
@@ -51,7 +51,7 @@ if (location.origin.includes("flemmix")) {
                         origin: "flemmix"
                     });
                 }
-                if (msg.payload.type == "time" && parseInt(msg.payload.time) > 0 && msg.payload.ep == ep) {
+                if (msg.payload.type == "time" && Number.parseInt(msg.payload.time) > 0 && msg.payload.ep == ep) {
                     document.getElementById("timeCode").textContent = getTime(msg.payload.time)
                     localStorage.setItem(title + "/" + ep, msg.payload.time)
                 }
@@ -70,8 +70,7 @@ if (location.origin.includes("flemmix")) {
 }
 
 async function getEp() {
-    while (true) {
-
+    setInterval(() => {
         if (document.querySelector(".eplist .active") != null)
             ep = document.querySelector(".eplist .active").textContent.replace("Episode ", "")
 
@@ -79,13 +78,12 @@ async function getEp() {
             time = localStorage.getItem(title + "/" + ep)
             document.getElementById("timeCode").textContent = getTime(time)
         }
-        await sleep(50)
-    }
+    }, 50)
 }
 function getTime(seconds) {
-    let time = parseInt(seconds)
+    let time = Number.parseInt(seconds)
     let res = ""
-    if (seconds == null || seconds == 0) {
+    if (seconds == null || seconds <= 0) {
         return "0:00"
     }
     if (time >= 60) {
@@ -94,12 +92,10 @@ function getTime(seconds) {
         else
             res = ":" + time % 60
     }
-    else {
-        if (time % 60 < 10)
+    else if (time % 60 < 10)
             return "0:0" + time % 60
         else
             return "0:" + time % 60
-    }
     if (time >= 3600) {
         if ((time - time % 60) / 60 % 60 < 10)
             res = ":0" + (time - time % 60) / 60 % 60 + res

@@ -2,7 +2,7 @@
 if (document.querySelectorAll(".profile-manga") != null && document.querySelectorAll(".profile-manga").length > 0) {
     let title = document.querySelector(".post-title > h1").textContent.replaceAll("\t", "").replaceAll("\n", "").replaceAll("’", "'")
     title = title.split(" ").slice(0, title.split(" ").indexOf("")).join(" ")
-    for (var element of document.querySelectorAll(".version-chap > li ")) {
+    for (let element of document.querySelectorAll(".version-chap > li ")) {
         let ep = element.querySelector("a").textContent.split(" - ")[1].split(" ")[0]
         let time = localStorage.getItem(title + "/" + ep)
         console.log(title + "/" + ep)
@@ -48,7 +48,7 @@ else {
                         origin: "voiranime"
                     });
                 }
-                if (msg.payload.type == "time" && parseInt(msg.payload.time)>0) {
+                if (msg.payload.type == "time" && Number.parseInt(msg.payload.time)>0) {
                     document.getElementById("timeCode").textContent = getTime(msg.payload.time)
                     localStorage.setItem(title + "/" + ep, msg.payload.time)
                 }
@@ -68,10 +68,10 @@ else {
 
 
 function getTime(seconds) {
-    let time = parseInt(seconds)
+    let time = Number.parseInt(seconds)
     let res = ""
     console.log(seconds)
-    if (seconds == null || seconds == 0) {
+    if (seconds == null || seconds <= 0) {
         return "0:00"
     }
     if (time >= 60) {
@@ -80,12 +80,10 @@ function getTime(seconds) {
         else
             res = ":" + time % 60
     }
-    else {
-        if (time % 60 < 10)
+    else if (time % 60 < 10)
             return "0:0" + time % 60
         else
             return "0:" + time % 60
-    }
     if (time >= 3600) {
         if ((time - time % 60) / 60 % 60 < 10)
             res = ":0" + (time - time % 60) / 60 % 60 + res

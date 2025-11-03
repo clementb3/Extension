@@ -1,15 +1,15 @@
 main()
 
-async function main() {
+function main() {
     let imgSrc = ''
     let lastMusicSelecte = null
     let scrollList = document.getElementById("tab-renderer")
-    while (true) {
+    setInterval(() => {
         let video = document.querySelector(".html5-video-container > video")
         let img = document.querySelector(".thumbnail-image-wrapper > img")
         let musicSelecte = document.querySelector("ytmusic-player-queue-item[selected]")
         if (video != null) {
-            document.querySelector(".html5-video-container").removeChild(video)
+            video.remove()
         }
         if (img != null && imgSrc != img.src && document.querySelector(".html5-video-container")!=null) {
             imgSrc = img.src
@@ -23,8 +23,8 @@ async function main() {
             scrollList.scrollTop += musicSelecte.getBoundingClientRect().top - scrollList.getBoundingClientRect().top
             console.log(musicSelecte.getBoundingClientRect().top - scrollList.getBoundingClientRect().top)
         }
-        await sleep(50)
-    }
+        
+    }, 50)
 }
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
