@@ -5,3 +5,6 @@
 /youtubePlayer/.vs
 /.vs
 /youtubePlayer.pem
+/extensionApi/.vs
+/extensionApi/bin/Debug/net8.0
+/extensionApi/obj
