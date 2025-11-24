@@ -21,7 +21,6 @@ function main() {
         if (lastMusicSelecte != musicSelecte) {
             lastMusicSelecte = musicSelecte
             scrollList.scrollTop += musicSelecte.getBoundingClientRect().top - scrollList.getBoundingClientRect().top
-            console.log(musicSelecte.getBoundingClientRect().top - scrollList.getBoundingClientRect().top)
         }
         
     }, 50)

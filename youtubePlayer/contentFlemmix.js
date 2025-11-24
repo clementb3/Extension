@@ -1,9 +1,8 @@
 let time = 0
 let ep = ""
-let title = ""
+let titleMovie = ""
 if (location.origin.includes("flemmix")) {
-    title = document.querySelector(".full-title").textContent.replaceAll("\t", "").replaceAll("\n", "")
-    time = localStorage.getItem(title + "/" + ep)
+    titleMovie = document.querySelector(".full-title").textContent.replaceAll("\t", "").replaceAll("\n", "")
     if (time == null) {
         time = 0
     }
@@ -13,72 +12,46 @@ if (location.origin.includes("flemmix")) {
     }
     let div = document.querySelector(".col-mov-right > ul")
     div.innerHTML += "<li><div class=\"mov-label\">Temps visionné:</div> <div class=\"mov-desc\"><span id=\"timeCode\" itemprop=\"description\">" + getTime(time) + "</span></div></li>"
-    if (document.querySelector(".epblocks") != null)
-        getEp()
+    getData()
     chrome.runtime.onMessage.addListener((msg) => {
-        if (msg.relay && msg.payload.from !== "top") {
-            console.log('Recu page :', msg.payload);
-            if (msg.payload.url.includes("https://oneupload.")) {
-                for (let iframe of document.querySelectorAll("iframe")) {
-                    if (iframe.src.includes(msg.payload.url.split("-").at(-1).split(".")[0])) {
-                        if (msg.payload.type == "data") {
-                            chrome.runtime.sendMessage({
-                                from: "top",
-                                type: "init",
-                                title: title,
-                                ep: ep,
-                                time: time,
-                                timeAdd: timeAdd,
-                                origin: "flemmix"
-                            });
-                        }
-                        if (msg.payload.type == "time" && Number.parseInt(msg.payload.time) > 0 && msg.payload.ep == ep) {
-                            document.getElementById("timeCode").textContent = getTime(msg.payload.time)
-                            localStorage.setItem(title + "/" + ep, msg.payload.time)
-                        }
-                    }
-                }
-            }
-            if (document.querySelectorAll('iframe[src="' + msg.payload.url + '"]').length > 0) {
-                if (msg.payload.type == "data") {
+        switch (msg.action) {
+            case "init":
+                if (document.querySelectorAll('iframe[src="' + msg.content + '"]').length > 0) {
+                console.log(document.querySelectorAll('iframe[src="' + msg.content + '"]'))
                     chrome.runtime.sendMessage({
-                        from: "top",
-                        type: "init",
-                        title: title,
-                        ep: ep,
-                        time: time,
+                        action: "getDataEpisode",
+                        title: titleMovie,
+                        episode: ep,
                         timeAdd: timeAdd,
                         origin: "flemmix"
                     });
                 }
-                if (msg.payload.type == "time" && Number.parseInt(msg.payload.time) > 0 && msg.payload.ep == ep) {
-                    document.getElementById("timeCode").textContent = getTime(msg.payload.time)
-                    localStorage.setItem(title + "/" + ep, msg.payload.time)
-                }
-            }
-            if (msg.payload.url == "all" && msg.payload.type == "timeAdd") {
-                localStorage.setItem("timeAdd", msg.payload.time);
-
-                chrome.runtime.sendMessage({
-                    from: "top",
-                    type: "timeAdd",
-                    time: msg.payload.time
-                });
-            }
+                return true;
+            case "time":
+                document.getElementById("timeCode").textContent = getTime(msg.content)
+                return true;
+            case "timeAdd":
+                localStorage.setItem("timeAdd", msg.content);
+                return true;
+            
         }
     });
 }
 
-async function getEp() {
-    setInterval(() => {
-        if (document.querySelector(".eplist .active") != null)
-            ep = document.querySelector(".eplist .active").textContent.replace("Episode ", "")
+function getData() {
+    if (document.querySelector(".epblocks") == null)
+    {
+        chrome.runtime.sendMessage({ action: "getTimeInit", episode: 0, title: titleMovie });
+        ep = 0
+    }
+    else {
 
-        if (time != localStorage.getItem(title + "/" + ep)) {
-            time = localStorage.getItem(title + "/" + ep)
-            document.getElementById("timeCode").textContent = getTime(time)
-        }
-    }, 50)
+        setInterval(() => {
+            if (document.querySelector(".eplist .active") != null && ep != document.querySelector(".eplist .active").textContent.replace("Episode ", "")) {
+                ep = document.querySelector(".eplist .active").textContent.replace("Episode ", "")
+            }
+
+        }, 500)}
 }
 function getTime(seconds) {
     let time = Number.parseInt(seconds)

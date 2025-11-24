@@ -1,76 +1,83 @@
+if (document.querySelectorAll(".profile-manga").length == 0) {
+    let titleAnime = document.querySelectorAll(".breadcrumb a")[1].textContent.replaceAll("\t", "").replaceAll("\n", "")
+    titleAnime = titleAnime.split(" ").slice(0, titleAnime.split(" ").indexOf("")).join(" ")
+    chrome.runtime.onMessage.addListener((msg) => {
+        let status = document.createElement("div")
+        switch (msg.action) {
+            case "serveurStateResponse":
+                status.style.width = "10px"
+                status.style.height = "10px"
+                status.style.borderRadius = "100%"
+                status.style.backgroundColor = "red"
+                if (msg.content) {
+                    status.style.backgroundColor = "green"
+                }
+                document.getElementById("time").appendChild(status);
+                return true;
+            case "init":
+                if (document.querySelectorAll('iframe[src="' + msg.content + '"]').length > 0) {
+                        chrome.runtime.sendMessage({
+                            action: "getDataEpisode",
+                            title: titleAnime,
+                            episode: ep,
+                            timeAdd: timeAdd,
+                            origin: "voiranime"
+                        });
+                }
+                return true;
+            case "time":
+                document.getElementById("timeCode").textContent = getTime(msg.content)
+                return true;
+            case "timeAdd":
+                localStorage.setItem("timeAdd", msg.content);
+                return true;
+        }
+    });
 
-if (document.querySelectorAll(".profile-manga") != null && document.querySelectorAll(".profile-manga").length > 0) {
-    let title = document.querySelector(".post-title > h1").textContent.replaceAll("\t", "").replaceAll("\n", "").replaceAll("’", "'")
-    title = title.split(" ").slice(0, title.split(" ").indexOf("")).join(" ")
-    for (let element of document.querySelectorAll(".version-chap > li ")) {
-        let ep = element.querySelector("a").textContent.split(" - ")[1].split(" ")[0]
-        let time = localStorage.getItem(title + "/" + ep)
-        console.log(title + "/" + ep)
-        element.querySelector("a").style.marginRight = "80px"
-        element.querySelector("span").style.textAlign = "center"
-        if (time != null)
-            element.querySelector("span").innerHTML += "<br>Time : " + getTime(time)
-    }
-}
-else {
+
     let selectHost = document.getElementsByClassName("host-select")[0]
     selectHost.addEventListener("change", () => {
-        console.log(selectHost.value)
         localStorage.setItem("Player", selectHost.value);
     })
+
     selectHost.value = localStorage.getItem("Player");
-    let title = document.querySelectorAll(".breadcrumb a")[1].textContent.replaceAll("\t", "").replaceAll("\n", "")
-    title = title.split(" ").slice(0, title.split(" ").indexOf("")).join(" ")
+
     let ep = document.querySelectorAll(".selectpicker_chapter select option")[document.querySelector(".selectpicker_chapter select").selectedIndex].textContent
-    let time = localStorage.getItem(title + "/" + ep)
-    if (time == null) {
-        time =   0
-    }
     let timeAdd = localStorage.getItem("timeAdd")
     if (timeAdd == null) {
         timeAdd = 10
     }
     let div = document.createElement("div")
-    div.innerHTML = "<p id='timeCode'>" + getTime(time) + "</p>"
+    div.id = "time"
+    div.style.display = "inline-flex"
+    div.style.alignItems = "center"
+    div.innerHTML = "<p style='margin: auto;margin-right: 5px;' id='timeCode'>" + getTime(0) + "</p>"
     document.querySelector(".select-view").appendChild(div)
-    chrome.runtime.onMessage.addListener((msg) => {
-        if (msg.relay && msg.payload.from !== "top") {
-            console.log('Recu page :', msg.payload);
-            if (document.querySelectorAll('iframe[src="' + msg.payload.url + '"]').length > 0) {
-                if (msg.payload.type == "data") {
-                    chrome.runtime.sendMessage({
-                        from: "top",
-                        type: "init",
-                        title: title,
-                        ep: ep,
-                        time: time,
-                        timeAdd: timeAdd,
-                        origin: "voiranime"
-                    });
-                }
-                if (msg.payload.type == "time" && Number.parseInt(msg.payload.time)>0) {
-                    document.getElementById("timeCode").textContent = getTime(msg.payload.time)
-                    localStorage.setItem(title + "/" + ep, msg.payload.time)
-                }
-            }
-            if (msg.payload.url == "all" && msg.payload.type == "timeAdd") {
-                localStorage.setItem("timeAdd", msg.payload.time);
+    chrome.runtime.sendMessage({ action: "getStatusServer" });
+    chrome.runtime.sendMessage({ action: "getTimeInit", episode: ep, title: titleAnime });
 
-                chrome.runtime.sendMessage({
-                    from: "top",
-                    type: "timeAdd",
-                    time: msg.payload.time
-                });
+}
+else {
+    chrome.runtime.onMessage.addListener((msg) => {
+        if (msg.action === "episodesTimeResponse") {
+            let allelement = document.querySelectorAll(".version-chap > li ")
+            for (let episode of JSON.parse(msg.content)) {
+                let element = allelement[allelement.length - episode.episode]
+                element.querySelector("a").style.marginRight = "80px"
+                element.querySelector("span").style.textAlign = "center"
+                element.querySelector("span").innerHTML += "<br>Time : " + getTime(episode.time)
             }
         }
     });
-}
 
+    let titleAnime = document.querySelector(".post-title > h1").textContent.replaceAll("\t", "").replaceAll("\n", "").replaceAll("’", "'")
+    titleAnime = titleAnime.split(" ").slice(0, titleAnime.split(" ").indexOf("")).join(" ")
+    chrome.runtime.sendMessage({ action: "getEpisodesTime", title: titleAnime });
+}
 
 function getTime(seconds) {
     let time = Number.parseInt(seconds)
     let res = ""
-    console.log(seconds)
     if (seconds == null || seconds <= 0) {
         return "0:00"
     }
