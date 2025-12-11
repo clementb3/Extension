@@ -14,7 +14,6 @@ namespace extensionApi
 
         public Provider(IConfiguration configuration)
         {
-
             connectionString = configuration.GetConnectionString("DefaultConnection");
 
             using (SqliteConnection SqliteConnection = new SqliteConnection(connectionString))
