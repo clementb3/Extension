@@ -3,6 +3,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace extensionApi
 {
@@ -13,7 +14,6 @@ namespace extensionApi
 
         public Provider(IConfiguration configuration)
         {
-
             connectionString = configuration.GetConnectionString("DefaultConnection");
 
             using (SqliteConnection SqliteConnection = new SqliteConnection(connectionString))
@@ -45,6 +45,31 @@ namespace extensionApi
         public List<WatchTime> GetAllWatchTime()
         {
             return watchTimes;
+        }
+        
+
+        public string GetAllWatchTimeString()
+        {
+            StringBuilder res = new StringBuilder("|---------------------------------------------------------------------------|");
+            res.Append("\n|  ID  |    TIME    |  episode  |                   title                   |");
+            res.Append("\n|---------------------------------------------------------------------------|");
+            foreach (WatchTime watchTime in watchTimes)
+            {
+                res.Append($"\n| {watchTime.Id,-4} | {ConvertTime(watchTime.Time),-10} | {watchTime.Episode,-9} | " +
+                    $"{(watchTime.Title!.Length > 41 ? watchTime.Title!.Substring(0,41) : watchTime.Title!),-41} |");
+            }
+            res.Append("\n|---------------------------------------------------------------------------|");
+            return res.ToString();
+        }
+
+        private string ConvertTime(int time)
+        {
+
+            int hours = time / 3600;
+            int minutes = time % 3600 / 60;
+            double seconds = time % 60;
+
+            return $"{hours:D2}:{minutes:D2}:{seconds:00.##}"; 
         }
 
         public WatchTime GetWatchTimeById(int id)

@@ -1,5 +1,5 @@
-using SQLitePCL;
 using System.Text.Json.Serialization;
+using SQLitePCL;
 
 namespace extensionApi
 {
@@ -7,7 +7,8 @@ namespace extensionApi
     {
         public static void Main(string[] args)
         {
-            Batteries.Init();
+            Batteries_V2.Init(); 
+
             var builder = WebApplication.CreateSlimBuilder(args);
 
             builder.Services.ConfigureHttpJsonOptions(options =>
@@ -27,6 +28,7 @@ namespace extensionApi
             extensionApi.MapGet("/id/{id}", (int id) => provider.GetWatchTimeById(id));
             extensionApi.MapGet("/eptitle/{ep}/{title}", (int ep, string title) => provider.GetWatchTimeByData(ep, title));
             extensionApi.MapPut("/", (WatchTime w) => provider.UpdateWatchTime(w));
+            extensionApi.MapGet("/list", () => provider.GetAllWatchTimeString());
 
             app.Run();
         }
