@@ -1,3 +1,4 @@
+using SQLitePCL;
 using System.Text.Json.Serialization;
 
 namespace extensionApi
@@ -6,6 +7,7 @@ namespace extensionApi
     {
         public static void Main(string[] args)
         {
+            Batteries.Init();
             var builder = WebApplication.CreateSlimBuilder(args);
 
             builder.Services.ConfigureHttpJsonOptions(options =>

@@ -1,39 +1,183 @@
-let urlServer = "http://localhost:5077";
+let urlServer = "http://176.190.38.228:8080";
 
+const regexFlemmixFilm = /^https:\/\/flemmix\.(?!name\/)[^/]+\/(film-en-streaming|film-ancien)\/.+/;
+const regexVoirAnime = /^https:\/\/[^\/]+\.voiranime\.com\/anime\/[^\/]+\/$/;
+const regexcontentAnime = /^https:\/\/[^\/]+\.voiranime\.com\/anime\/[^\/]+\/[^\/]+\/?$/;
+let serverState = false;
+
+let link = [];
+
+updateServerState()
+setInterval(() => updateServerState, 15000)
+
+function urlValid(url) {
+    const patterns = [
+        "vidmoly.",
+        "referer=v6.voiranime.com",
+        "ref=v6.voiranime.com",
+        "my.mail.ru",
+        "dooodster.",
+        "jilliandescribecompany.",
+        "walterprettytheir.",
+        "streamtape.",
+        "oneupload.",
+        "d-s.io/",
+        "luluvid.",
+        "uqload.",
+        "mivalyo.",
+        "hglink.",
+        "ups2up.",
+        "voe.",
+        "f16px.",
+        "christopheruntilpoint."
+    ];
+
+    for (const pattern of patterns)
+        if (url.includes(pattern))
+            return true;
+    return false;
+}
+
+
+
+chrome.webNavigation.onCompleted.addListener(async (details) => {
+    if (details.frameId > 0) { // 0 = document principal
+        try {
+
+            const results = await chrome.scripting.executeScript({
+                target: { tabId: details.tabId, frameIds: [details.frameId] },
+                func: () => {
+                    return location.href;
+                }
+            });
+            if (urlValid(results[0].result)) {
+                console.log("Retour du script :", results[0].result);
+                chrome.tabs.get(details.tabId, (tab) => {
+                    console.log("Retour du script :", tab);
+                    if (regexFlemmixFilm.test(tab.url)) {
+                        console.log(urlServer + "/extensionApi/eptitle/0/" + tab.url.split("/").slice(-1)[0].split('.html')[0])
+                        fetch(urlServer + "/extensionApi/eptitle/0/" + tab.url.split("/").slice(-1)[0].split('.html')[0])
+                            .then(res => {
+                                if (!res.ok) throw new Error("HTTP " + res.status);
+                                return res.text();
+                            })
+                            .then(data => {
+                                chrome.storage.local.set({ data: JSON.parse(data), origin: "flemmix" }, () => {
+                                    chrome.scripting.executeScript({
+                                        target: {
+                                            tabId: details.tabId,
+                                            frameIds: [details.frameId]
+                                        },
+                                        files: ["contentPlayer.js"]
+                                    });
+                                })
+                                chrome.scripting.insertCSS({
+                                    target: {
+                                        tabId: details.tabId,
+                                        frameIds: [details.frameId]
+                                    },
+                                    files: ["style.css"]
+                                })
+                            })
+                    }
+                    if (regexVoirAnime.test(tab.url)) {
+                        fetch(urlServer + "/extensionApi/title/" + tab.url.split('/').slice(-3)[0])
+                            .then(res => {
+                                if (!res.ok) throw new Error("HTTP " + res.status);
+                                return res.text();
+                            })
+                            .then(data => {
+                                chrome.storage.local.set({ dataAnimePlayer: JSON.parse(data) }, () => {
+                                    chrome.scripting.executeScript({
+                                        target: { tabId },
+                                        files: ["contentPlayer.js"]
+                                    });
+                                }
+                                )
+                            })
+                    }
+                });
+            }
+
+        } catch { }
+    }
+});
+
+chrome.tabs.onUpdated.addListener((tabId, info) => {
+    console.log("Tab updated: ", tabId, info);
+    if (info.status === 'complete') {
+        chrome.tabs.get(tabId, (tab) => {
+            //flemmix film
+            if (regexFlemmixFilm.test(tab.url)) {
+                console.log("title : ", tab.url.split('/').slice(-1)[0].split('.html')[0])
+                fetch(urlServer + "/extensionApi/eptitle/0/" + tab.url.split('/').slice(-1)[0].split('.html')[0])
+                    .then(res => {
+                        if (!res.ok) throw new Error("HTTP " + res.status);
+                        return res.text();
+                    })
+                    .then(data => {
+                        chrome.storage.local.set({ dataMovie: JSON.parse(data), serverState: serverState }, () => {
+                            chrome.scripting.executeScript({
+                                target: { tabId },
+                                files: ["contentFlemmixFilm.js"]
+                            });
+                        }
+                        )
+                    })
+            }
+
+            //voiranime liste des episodes d'un anime
+            if (regexVoirAnime.test(tab.url)) {
+                console.log("title : ", tab.url.split('/').slice(-2)[0])
+                fetch(urlServer + "/extensionApi/title/" + tab.url.split('/').slice(-2)[0])
+                    .then(res => {
+                        if (!res.ok) throw new Error("HTTP " + res.status);
+                        return res.text();
+                    })
+                    .then(data => {
+                        chrome.storage.local.set({ dataAnime: JSON.parse(data) }, () => {
+                            chrome.scripting.executeScript({
+                                target: { tabId },
+                                files: ["contentAnimeListEp.js"]
+                            });
+                        }
+                        )
+                    })
+            }
+
+            //episode anime
+            if (regexcontentAnime.test(tab.url)) {
+                console.log("title : ", tab.url.split('/').slice(-3)[0])
+                console.log("title episode : ", tab.url.split('-').slice(-2)[0])
+                fetch(urlServer + "/extensionApi/eptitle/" + tab.url.split('-').slice(-2)[0] + "/" + tab.url.split('/').slice(-3)[0])
+                    .then(res => {
+                        if (!res.ok) throw new Error("HTTP " + res.status);
+                        return res.text();
+                    })
+                    .then(data => {
+                        chrome.storage.local.set({ dataAnime: JSON.parse(data), serverState: serverState }, () => {
+                            chrome.scripting.executeScript({
+                                target: { tabId },
+                                files: ["contentAnime.js"]
+                            });
+                        }
+                        )
+                    })
+            }
+        })
+    }
+});
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     switch (msg.action) {
-        case "getStatusServer":
-            fetch(urlServer + "/serveurState")
-                .then(res => {
-                    chrome.tabs.query({}, (tabs) => {
-                        for (const tab of tabs) {
-                            chrome.tabs.sendMessage(tab.id, {
-                                action: "serveurStateResponse",
-                                content: res.ok
-                            });
-                        }
-                    })
-                }).catch(() => {
-                    chrome.tabs.query({}, (tabs) => {
-                        for (const tab of tabs) {
-                            chrome.tabs.sendMessage(tab.id, {
-                                action: "serveurStateResponse",
-                                content: false
-                            });
-                        }
-                    })
-                })
-            return true;
         case "putTime":
             fetch(urlServer + "/extensionApi", {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ Id: msg.id, Title: '', Episode: 0, Time:parseInt(msg.time) })
+                body: JSON.stringify({ Id: msg.id, Title: '', Episode: 0, Time: parseInt(msg.time) })
             })
-            return true;
         case "getDataEpisode":
             console.log("getDataEpisode res")
             fetch(urlServer + "/extensionApi/eptitle/" + msg.episode + "/" + msg.title)
@@ -47,12 +191,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                             chrome.tabs.sendMessage(tab.id, {
                                 action: "DataEpisodeResponse",
                                 content: data,
-                                origin: msg.origin
+                                origin: msg.origin,
+                                url: msg.url,
                             });
                         }
                     })
                 });
-            return true;
         case "getTimeInit":
             console.log("getTimeInit")
             fetch(urlServer + "/extensionApi/eptitle/" + msg.episode + "/" + msg.title)
@@ -66,11 +210,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                             chrome.tabs.sendMessage(tab.id, {
                                 action: "time",
                                 content: JSON.parse(data).time,
+                                url: msg.url,
                             });
                         }
                     })
                 });
-            return true;
         case "getEpisodesTime":
             fetch(urlServer + "/extensionApi/title/" + msg.title)
                 .then(res => {
@@ -87,7 +231,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                         }
                     })
                 });
-            return true;
         default:
             try {
                 chrome.tabs.query({}, (tabs) => {
@@ -95,14 +238,41 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                         chrome.tabs.sendMessage(tab.id, {
                             from: sender.frameId,
                             action: msg.action,
-                            content: msg.message
+                            content: msg.message,
+                            url: msg.url
                         });
                     }
                 });
             } catch {
-                console.log("error"+msg)
+                console.log("error" + msg)
             }
-    }
+
+
+    }return false;
 });
 
 
+function updateServerState() {
+    fetch(urlServer + "/serveurState")
+        .then(res => {
+            serverState = true;
+            chrome.tabs.query({}, (tabs) => {
+                for (const tab of tabs) {
+                    chrome.tabs.sendMessage(tab.id, {
+                        action: "serveurStateResponse",
+                        content: res.ok,
+                    });
+                }
+            })
+        }).catch(() => {
+            serverState = false;
+            chrome.tabs.query({}, (tabs) => {
+                for (const tab of tabs) {
+                    chrome.tabs.sendMessage(tab.id, {
+                        action: "serveurStateResponse",
+                        content: false,
+                    });
+                }
+            })
+        })
+}
