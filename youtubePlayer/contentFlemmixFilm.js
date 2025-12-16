@@ -40,10 +40,6 @@ chrome.runtime.onMessage.addListener((msg) => {
     }
 });
 
-function getData() {
-        chrome.runtime.sendMessage({ action: "getTimeInit", episode: 0, title: titleMovie });
-        ep = 0
-}
 function getTime(seconds) {
     let time = Number.parseInt(seconds)
     let res = ""

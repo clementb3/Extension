@@ -12,7 +12,6 @@ if (timeAdd == null) {
 }
 let div = document.querySelector(".col-mov-right > ul")
 div.innerHTML += "<li><div class=\"mov-label\">Temps visionné:</div> <div class=\"mov-desc\"><span id=\"timeCode\" itemprop=\"description\">" + getTime(time) + "</span></div></li>"
-getData()
 chrome.runtime.onMessage.addListener((msg) => {
     switch (msg.action) {
         case "init":
@@ -36,7 +35,6 @@ chrome.runtime.onMessage.addListener((msg) => {
 
     }
 });
-}
 
 function getData() {
     setInterval(() => {

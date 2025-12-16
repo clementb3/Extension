@@ -1,7 +1,5 @@
 let serverState = document.createElement("div")
-
 chrome.storage.local.get(["dataAnime", "serverState"], (res) => {
-    console.log("data : ", res)
     let div = document.createElement("div")
     div.id = "time"
     div.style.display = "inline-flex"

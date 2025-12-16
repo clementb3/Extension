@@ -20,15 +20,17 @@ let svgPictureInPicture = '<svg width="48px" height="48px"  viewBox="0 0 36 36">
 let svgPause = '<svg style="margin-left:-3px" width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 18.5,22 18.5,14 12,10 z M 18.5,22 25,18 25,18 18.5,14 z"></path><svg>'
 let svgPlay = '<svg style="margin-left:-4px" width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 16,26 16,10 12,10 z M 21,26 25,26 25,10 21,10 z"></path></svg>'
 let svgSkipOp = '<svg width="48px" height="48px" viewBox="0 0 36 36"><style>.small {font: 10px roboto;}</style><path  d="M 30 10 L 33 16  L 26.7 17 " fill="white"></path><path d="M 3 15 Q 15 7 29 14 " stroke="white" fill="transparent"></path><text x="6" y="24" class="small" fill="white">1:30</text></svg>'
-
+let title = ""
 
 chrome.storage.local.get(["data", "origin"], async (res) => {
+    console.log("data loaded in player: ", res.data)
+    title = res.data.title
+    localStorage.setItem("id-" + res.data.title, res.data.id);
     setInterval(() => {
         if (document.querySelector("video") != null && clientWidth == 0) {
             clientWidth = document.querySelector('video').clientWidth
         }
         if (document.querySelector("video") != null && !changePLayer && document.getElementsByClassName("controls").length == 0) {
-            console.log("Ajout player ")
             Player()
         }
 
@@ -58,7 +60,6 @@ chrome.storage.local.get(["data", "origin"], async (res) => {
     if (res.origin == "flemmix")
         document.getElementById("skipOp").remove()
 
-    localStorage.setItem("id", res.data.id);
     while (true) {
         updateDataEpisode()
         await sleep(5000)
@@ -134,9 +135,10 @@ function hide(elementHtml) {
 
 function updateDataEpisode() {
     let video = document.querySelector("video")
+    console.log("Update : ", "id-" + title)
     chrome.runtime.sendMessage({
         action: "putTime",
-        id: localStorage.getItem("id"),
+        id: localStorage.getItem("id-" + title),
         time: video.currentTime,
     })
 

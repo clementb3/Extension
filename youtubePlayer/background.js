@@ -2,7 +2,7 @@ let urlServer = "http://176.190.38.228:8080";
 
 const regexFlemmixFilm = /^https:\/\/flemmix\.(?!name\/)[^/]+\/(film-en-streaming|film-ancien)\/.+/;
 const regexVoirAnime = /^https:\/\/[^\/]+\.voiranime\.com\/anime\/[^\/]+\/$/;
-const regexcontentAnime = /^https:\/\/[^\/]+\.voiranime\.com\/anime\/[^\/]+\/[^\/]+\/?$/;
+const regexcontentAnime = /^https:\/\/v\d+\.voiranime\.com\/anime\/[^\/]+\/[^\/]+\/$/;
 let serverState = false;
 
 let link = [];
@@ -51,52 +51,44 @@ chrome.webNavigation.onCompleted.addListener(async (details) => {
                 }
             });
             if (urlValid(results[0].result)) {
-                console.log("Retour du script :", results[0].result);
                 chrome.tabs.get(details.tabId, (tab) => {
-                    console.log("Retour du script :", tab);
-                    if (regexFlemmixFilm.test(tab.url)) {
-                        console.log(urlServer + "/extensionApi/eptitle/0/" + tab.url.split("/").slice(-1)[0].split('.html')[0])
-                        fetch(urlServer + "/extensionApi/eptitle/0/" + tab.url.split("/").slice(-1)[0].split('.html')[0])
-                            .then(res => {
-                                if (!res.ok) throw new Error("HTTP " + res.status);
-                                return res.text();
-                            })
-                            .then(data => {
-                                chrome.storage.local.set({ data: JSON.parse(data), origin: "flemmix" }, () => {
-                                    chrome.scripting.executeScript({
-                                        target: {
-                                            tabId: details.tabId,
-                                            frameIds: [details.frameId]
-                                        },
-                                        files: ["contentPlayer.js"]
-                                    });
-                                })
-                                chrome.scripting.insertCSS({
+                    console.log("tab details: ", tab)
+                    let episodeId = 0
+                    let title = ""
+                    if (regexcontentAnime.test(tab.url)) {
+                        title = tab.url.split('/').slice(-3)[0]
+                        episodeId = tab.url.split('-').slice(-2)[0]
+                    }
+
+                    console.log(urlServer + "/extensionApi/eptitle/" + episodeId + "/" + title)
+                    fetch(urlServer + "/extensionApi/eptitle/" + episodeId + "/" + title)
+                        .then(res => {
+                            if (!res.ok) throw new Error("HTTP " + res.status);
+                            return res.text(); a
+                        })
+                        .then(data => {
+                            originData = "flemmix"
+                            if (tab.url.includes("voiranime"))
+                                originData = "voiranime";
+                            chrome.storage.local.set({ data: JSON.parse(data), origin: originData }, () => {
+                                chrome.scripting.executeScript({
                                     target: {
                                         tabId: details.tabId,
                                         frameIds: [details.frameId]
                                     },
-                                    files: ["style.css"]
-                                })
+                                    files: ["contentPlayer.js"]
+                                });
                             })
-                    }
-                    if (regexVoirAnime.test(tab.url)) {
-                        fetch(urlServer + "/extensionApi/title/" + tab.url.split('/').slice(-3)[0])
-                            .then(res => {
-                                if (!res.ok) throw new Error("HTTP " + res.status);
-                                return res.text();
+                            chrome.scripting.insertCSS({
+                                target: {
+                                    tabId: details.tabId,
+                                    frameIds: [details.frameId]
+                                },
+                                files: ["style.css"]
                             })
-                            .then(data => {
-                                chrome.storage.local.set({ dataAnimePlayer: JSON.parse(data) }, () => {
-                                    chrome.scripting.executeScript({
-                                        target: { tabId },
-                                        files: ["contentPlayer.js"]
-                                    });
-                                }
-                                )
-                            })
-                    }
-                });
+                        })
+
+                })
             }
 
         } catch { }
@@ -104,7 +96,6 @@ chrome.webNavigation.onCompleted.addListener(async (details) => {
 });
 
 chrome.tabs.onUpdated.addListener((tabId, info) => {
-    console.log("Tab updated: ", tabId, info);
     if (info.status === 'complete') {
         chrome.tabs.get(tabId, (tab) => {
             //flemmix film
@@ -177,44 +168,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({ Id: msg.id, Title: '', Episode: 0, Time: parseInt(msg.time) })
-            })
-        case "getDataEpisode":
-            console.log("getDataEpisode res")
-            fetch(urlServer + "/extensionApi/eptitle/" + msg.episode + "/" + msg.title)
-                .then(res => {
-                    if (!res.ok) throw new Error("HTTP " + res.status);
-                    return res.text();
-                })
-                .then(data => {
-                    chrome.tabs.query({}, (tabs) => {
-                        for (const tab of tabs) {
-                            chrome.tabs.sendMessage(tab.id, {
-                                action: "DataEpisodeResponse",
-                                content: data,
-                                origin: msg.origin,
-                                url: msg.url,
-                            });
-                        }
-                    })
-                });
-        case "getTimeInit":
-            console.log("getTimeInit")
-            fetch(urlServer + "/extensionApi/eptitle/" + msg.episode + "/" + msg.title)
-                .then(res => {
-                    if (!res.ok) throw new Error("HTTP " + res.status);
-                    return res.text();
-                })
-                .then(data => {
-                    chrome.tabs.query({}, (tabs) => {
-                        for (const tab of tabs) {
-                            chrome.tabs.sendMessage(tab.id, {
-                                action: "time",
-                                content: JSON.parse(data).time,
-                                url: msg.url,
-                            });
-                        }
-                    })
-                });
+            })  
         case "getEpisodesTime":
             fetch(urlServer + "/extensionApi/title/" + msg.title)
                 .then(res => {
