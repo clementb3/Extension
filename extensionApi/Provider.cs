@@ -53,7 +53,7 @@ namespace extensionApi
             StringBuilder res = new StringBuilder("|---------------------------------------------------------------------------|");
             res.Append("\n|  ID  |    TIME    |  episode  |                   title                   |");
             res.Append("\n|---------------------------------------------------------------------------|");
-            foreach (WatchTime watchTime in watchTimes)
+            foreach (WatchTime watchTime in watchTimes.Reverse<WatchTime>())
             {
                 res.Append($"\n| {watchTime.Id,-4} | {ConvertTime(watchTime.Time),-10} | {watchTime.Episode,-9} | " +
                     $"{(watchTime.Title!.Length > 41 ? watchTime.Title!.Substring(0,41) : watchTime.Title!),-41} |");
@@ -97,6 +97,22 @@ namespace extensionApi
                 {
                     sqlCommand.Parameters.AddWithValue("@Time", watchTime.Time);
                     sqlCommand.Parameters.AddWithValue("@Id", watchTime.Id);
+                    sqlCommand.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public void DeleteWatchTime(string title)
+        {
+            watchTimes.RemoveAll(w => w.Title!.Equals(title));
+            using (SqliteConnection SqliteConnection = new SqliteConnection(this.connectionString))
+            {
+                SqliteConnection.Open();
+                string query = @"
+                delete from timeWatch where title=@Title";
+                using (var sqlCommand = SqliteConnection.CreateCommand())
+                {
+                    sqlCommand.Parameters.AddWithValue("@Title", title);
                     sqlCommand.ExecuteNonQuery();
                 }
             }

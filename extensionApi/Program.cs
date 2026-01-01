@@ -27,6 +27,7 @@ namespace extensionApi
             extensionApi.MapGet("/title/{title}", (string title) => provider.GetWatchTimeByTitle(title));
             extensionApi.MapGet("/id/{id}", (int id) => provider.GetWatchTimeById(id));
             extensionApi.MapGet("/eptitle/{ep}/{title}", (int ep, string title) => provider.GetWatchTimeByData(ep, title));
+            extensionApi.MapDelete("/{title}", (string title) => provider. DeleteWatchTime(title));
             extensionApi.MapPut("/", (WatchTime w) => provider.UpdateWatchTime(w));
             extensionApi.MapGet("/list", () => provider.GetAllWatchTimeString());
 
