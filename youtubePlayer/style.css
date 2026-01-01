@@ -240,3 +240,14 @@ p {
 #time > p {
     font-size:100%;
 }
+
+#load {
+    width: 100%;
+    position: absolute;
+    height: 100%;
+    pointer-events: none;
+    visibility: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

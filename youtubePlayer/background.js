@@ -27,9 +27,14 @@ function urlValid(url) {
         "mivalyo.",
         "hglink.",
         "ups2up.",
+        "up4fun.",
         "voe.",
         "f16px.",
-        "christopheruntilpoint."
+        "christopheruntilpoint.",
+        "flemmix.upns",
+        "savefiles.",
+        "minochinos.",
+        "hglink."
     ];
 
     for (const pattern of patterns)
@@ -41,7 +46,7 @@ function urlValid(url) {
 
 
 chrome.webNavigation.onCompleted.addListener(async (details) => {
-    if (details.frameId > 0) { // 0 = document principal
+    if (details.frameId > 0) { 
         try {
 
             const results = await chrome.scripting.executeScript({
@@ -58,6 +63,9 @@ chrome.webNavigation.onCompleted.addListener(async (details) => {
                     if (regexcontentAnime.test(tab.url)) {
                         title = tab.url.split('/').slice(-3)[0]
                         episodeId = tab.url.split('-').slice(-2)[0]
+                    }
+                    else if (regexFlemmixFilm.test(tab.url)) {
+                        title = tab.url.split('/').slice(-1)[0].split('.html')[0]
                     }
 
                     console.log(urlServer + "/extensionApi/eptitle/" + episodeId + "/" + title)

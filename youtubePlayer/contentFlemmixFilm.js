@@ -3,7 +3,7 @@ let serverState = document.createElement("div")
 
 chrome.storage.local.get(["dataMovie", "serverState"], (res) => {
     let div = document.querySelector(".col-mov-right > ul")
-    div.innerHTML += "<li><div id=\"time\" class=\"mov-label\">Temps visionné:</div> <div class=\"mov-desc\"><span id=\"timeCode\" itemprop=\"description\">" + getTime(res.dataMovie.time) + "</span></div></li>"
+    div.innerHTML += "<li><div class=\"mov-label\">Temps visionné:</div> <div class=\"mov-desc\" id=\"time\" style=\"display: flex;align-items: center;\"><span id=\"timeCode\" itemprop=\"description\">" + getTime(res.dataMovie.time) + " </span></div></li>"
 
     serverState.style.width = "10px"
     serverState.style.height = "10px"
@@ -15,29 +15,21 @@ chrome.storage.local.get(["dataMovie", "serverState"], (res) => {
     document.getElementById("time").appendChild(serverState);
 })
 
-getData()
 chrome.runtime.onMessage.addListener((msg) => {
     switch (msg.action) {
-        case "init":
-            if (document.querySelectorAll('iframe[src="' + msg.content + '"]').length > 0) {
-                console.log(document.querySelectorAll('iframe[src="' + msg.content + '"]'))
-                chrome.runtime.sendMessage({
-                    action: "getDataEpisode",
-                    title: titleMovie,
-                    episode: ep,
-                    timeAdd: timeAdd,
-                    origin: "flemmix"
-                });
+        case "serveurStateResponse":
+            if (msg.content) {
+                serverState.style.backgroundColor = "green"
             }
-            return true;
+            else {
+                serverState.style.backgroundColor = "red"
+            }
         case "time":
-            document.getElementById("timeCode").textContent = getTime(msg.content)
-            return true;
-        case "timeAdd":
-            localStorage.setItem("timeAdd", msg.content);
-            return true;
-
+            if (document.querySelectorAll('iframe[src="' + msg.url + '"]').length > 0 || msg.url == location.href) {
+                document.getElementById("timeCode").textContent = getTime(msg.content)
+            }
     }
+    return false;
 });
 
 function getTime(seconds) {

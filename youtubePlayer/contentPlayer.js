@@ -10,6 +10,7 @@ let changePLayer = false
 let initActivated = true
 let clientWidth = 0
 let doubleTaps = [1, 2, 3, 5, 10, 15, 20]
+
 // Svg Icon
 let svgFullscreenOn = '<svg width="36px" height="36px"  viewBox="0 0 36 36" fill="white"><path d="m 7,16 v -8 h 8 v 1 h -7 v 7"></path><path d="m 19,8 h 8 v 8 h -1 v -7 h -7"></path><path d="m 7,20 v 8 h 8 v -1 h -7 v -7" ></path><path d="m 19,28 h 8 v -8 h -1 v 7 h -7" ></path></svg>'
 let svgFullscreenOff = '<svg width="36px" height="36px  " viewBox="0 0 36 36" fill="white"><path d="m 7,15 h 7 v -7 h -1 v 6 h -6" ></path><path d="m 21,8 v 7 h 7 v -1 h -6 v -6" ></path><path d="m 7,22 h 7 v 7 h -1 v -6 h -6"></path><path d="m 21,29 v -7 h 7 v 1 h -6 v 6"></path></svg>'
@@ -20,6 +21,7 @@ let svgPictureInPicture = '<svg width="48px" height="48px"  viewBox="0 0 36 36">
 let svgPause = '<svg style="margin-left:-3px" width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 18.5,22 18.5,14 12,10 z M 18.5,22 25,18 25,18 18.5,14 z"></path><svg>'
 let svgPlay = '<svg style="margin-left:-4px" width="48px" height="48px" viewBox="0 0 36 36" fill="white"><path d="M 12,26 16,26 16,10 12,10 z M 21,26 25,26 25,10 21,10 z"></path></svg>'
 let svgSkipOp = '<svg width="48px" height="48px" viewBox="0 0 36 36"><style>.small {font: 10px roboto;}</style><path  d="M 30 10 L 33 16  L 26.7 17 " fill="white"></path><path d="M 3 15 Q 15 7 29 14 " stroke="white" fill="transparent"></path><text x="6" y="24" class="small" fill="white">1:30</text></svg>'
+let svgLoad = '<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="-1 -1 42 42"><defs><linearGradient x1="8.042%" y1="0%" x2="65.682%" y2="23.865%" id="a"><stop stop-color="#FFF" class="circle" stop-opacity="0" offset="0%"/><stop stop-color="#FFF" class="circle" stop-opacity=".631" offset="63.146%"/><stop stop-color="#FFF" class="circle" offset="100%"/></linearGradient></defs><g fill="none" fill-rule="evenodd"><g transform="translate(1 1)"><path d="M36 18c0-9.94-8.06-18-18-18" id="Oval-2" stroke="url(#a)" stroke-width="4"><animateTransform attributeName="transform" type="rotate" from="0 18 18" to="360 18 18" dur="0.9s" repeatCount="indefinite"/></path><circle fill="#FFF" cx="36" cy="18" r="1" class="circle"><animateTransform attributeName="transform" type="rotate" from="0 18 18" to="360 18 18" dur="0.9s" repeatCount="indefinite"/></circle></g></g></svg>'
 let title = ""
 
 chrome.storage.local.get(["data", "origin"], async (res) => {
@@ -29,42 +31,48 @@ chrome.storage.local.get(["data", "origin"], async (res) => {
     setInterval(() => {
         if (document.querySelector("video") != null && clientWidth == 0) {
             clientWidth = document.querySelector('video').clientWidth
+            setInterval(() => {
+                if (document.querySelector("video").readyState >= 4) {
+                    hideLoad()
+                    clearInterval(this)
+                }
+            }, 500)
         }
         if (document.querySelector("video") != null && !changePLayer && document.getElementsByClassName("controls").length == 0) {
             Player()
+            showLoad()
+            if (res.origin == "flemmix")
+                document.getElementById("skipOp").remove()
+            updatetimeCodeWithValue(res.data.time)
         }
-
-        if (!play)
-            play = playAuto()
 
         hideAll(document.querySelector("body"))
         updateOpacity()
-        if (timeMov != Number.parseInt(localStorage.getItem("timeMov"))) {
+        if (localStorage.getItem("timeMov") != null && timeMov != Number.parseInt(localStorage.getItem("timeMov"))) {
             timeMov = Number.parseInt(localStorage.getItem("timeMov"))
         }
     }, 100)
 
-    let count = 0
-    while (count < 5) {
-        let video = document.querySelector("video")
-        if (video.currentTime <= res.data.time) {
-            video.currentTime = res.data.time
-            count = 0
+
+    document.querySelector("video").addEventListener("canplay", () => {
+        document.querySelector("video").currentTime = res.data.time
+        playAuto()
+        console.log("Chargement terminé (prêt à lire)");
+    }, { once: true });
+
+    document.querySelector("video").addEventListener("waiting", () => {
+        showLoad()
+
+    });
+
+
+    let lastTime = 0
+    setInterval(async () => {
+        if (document.querySelector("video").currentTime != lastTime) {
+            lastTime = document.querySelector("video").currentTime
+            updateDataEpisode()
         }
-        else
-            count = count + 1
-        await sleep(100)
-    }
-
-
-    if (res.origin == "flemmix")
-        document.getElementById("skipOp").remove()
-
-    while (true) {
-        updateDataEpisode()
-        await sleep(5000)
-    }
-
+    }, 5000)
 })
 
 
@@ -219,20 +227,16 @@ function updateOpacity() {
 function playAuto() {
     try {
         let playButton;
-        if (location.href.includes("https://vidmoly.") || location.href.includes("ref=v6.voiranime.com") || location.href.includes("https://ups2up.") || location.href.includes("https://oneupload.") || location.href.includes("https://luluvid.") || location.href.includes("https://mivalyo.") || location.href.includes("https://hglink."))
-            playButton = document.querySelector(".jw-icon-display")
-        if (location.href.includes("https://uqload."))
-            playButton = document.querySelector(".play-wrapper")
-        if (location.href.includes("https://d-s."))
-            playButton = document.querySelector(".vjs-big-play-button")
-        if (location.href.includes("https://jilliandescribecompany."))
-            playButton = document.querySelector(".icon")
-        if (location.href.includes("https://streamtape."))
-            playButton = document.querySelectorAll("button[aria-label='Play']")[1]
-        if (playButton != null) {
-            playButton.click()
-        }
-        document.querySelector("video").play()
+        if (document.querySelectorAll(".jw-icon-display")>0)
+            playButton = document.querySelector(".jw-icon-display").click()
+        if (document.querySelectorAll(".play-wrapper") > 0)
+            playButton = document.querySelector(".play-wrapper").click()
+        if (document.querySelectorAll(".vjs-big-play-button") > 0)
+            playButton = document.querySelector(".vjs-big-play-button").click()
+        if (document.querySelectorAll(".icon") > 0)
+            playButton = document.querySelector(".icon").click()
+        if (document.querySelectorAll("button[aria-label='Play']") > 0)
+            playButton = document.querySelectorAll("button[aria-label='Play']")[1].click()
 
         return !document.querySelector("video").paused
     }
@@ -270,6 +274,7 @@ function createPlayer() {
     document.querySelector(".controls").addEventListener("click", clickPlayer)
     document.querySelector(".controls").addEventListener("mousemove", function () { lastClickGlobal = Date.now() })
     let div = document.createElement("div")
+    document.querySelector(".controls").appendChild(createLoad())
 
     div.className = "controlBar"
     let controls = document.createElement("div")
@@ -329,6 +334,13 @@ function createPlayer() {
         document.querySelector(".controls").style.flexDirection = "column"
     }
     return div
+}
+
+function createLoad() {
+    let divLoad = document.createElement("div")
+    divLoad.id = "load"
+    divLoad.innerHTML = svgLoad
+    return divLoad
 }
 
 function clickPlayer(event) {
@@ -546,6 +558,20 @@ function changeTimeDoubleTaps(event) {
     event.srcElement.style.background = "rgb(201, 201, 201, 0.20)"
 }
 
+function showLoad() {
+    if (checkMobile()) {
+        document.getElementById('playPause').style.visibility = "hidden"
+    }
+    document.getElementById('load').style.visibility = "visible"
+}
+
+function hideLoad() {
+    if (checkMobile()) {
+        document.getElementById('playPause').style.visibility = "visible"
+    }
+    document.getElementById('load').style.visibility = "hidden"
+}
+
 function fullScreenAction() {
     isFullScreen = clientWidth < document.querySelector('video').clientWidth
     changeFullscreenIcon()
@@ -624,6 +650,9 @@ function updatetimeCode() {
     let slider = document.getElementById("slider")
     let video = document.querySelector("video")
     let timeCode = document.getElementById("timeCode")
+    if (video == null || video.duration == NaN) {
+        return;
+    }
     if (timeCode != null)
         timeCode.textContent = getTime(video.currentTime) + "/" + getTime(video.duration)
     if (barProgress != null)
@@ -651,6 +680,9 @@ function updatetimeCodeWithValue(currentTime) {
     let slider = document.getElementById("slider")
     let video = document.querySelector("video")
     let timeCode = document.getElementById("timeCode")
+    if (video == null || video.duration == NaN) {
+        return;
+    }
     if (timeCode != null)
         timeCode.textContent = getTime(currentTime) + "/" + getTime(video.duration)
     if (barProgress != null)
